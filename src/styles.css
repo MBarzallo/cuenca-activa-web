@@ -1,1 +1,262 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+@import "primeicons/primeicons.css";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --ca-gold: #D4A937;
+  --ca-navy: #0F172A;
+  --ca-teal: #14B8A6;
+  --ca-gray: #E5E7EB;
+  --ca-bg: #F8FAFC;
+  --ca-white: #FFFFFF;
+  --ca-danger: #DC2626;
+  --ca-success: #16A34A;
+  --ca-border: #E2E8F0;
+  --ca-muted: #64748B;
+  --ca-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--ca-bg);
+  color: var(--ca-navy);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.ca-page {
+  min-height: 100vh;
+  background: var(--ca-bg);
+}
+
+.ca-card {
+  background: var(--ca-white);
+  border: 1px solid var(--ca-border);
+  border-radius: 14px;
+  box-shadow: var(--ca-shadow);
+}
+
+.ca-nav-link {
+  border-radius: 999px;
+  color: #475569;
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.6rem 0.9rem;
+  text-decoration: none;
+}
+
+.ca-nav-link:hover,
+.ca-nav-active {
+  background: #f1f5f9;
+  color: var(--ca-navy);
+}
+
+.ca-public-link {
+  align-items: center;
+  border-radius: 12px;
+  color: #475569;
+  display: flex;
+  font-weight: 650;
+  gap: 0.85rem;
+  padding: 0.8rem 0.9rem;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.ca-public-link i {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  color: var(--ca-navy);
+  display: inline-flex;
+  height: 2.1rem;
+  justify-content: center;
+  width: 2.1rem;
+}
+
+.ca-public-link:hover,
+.ca-public-active {
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.ca-public-active i {
+  background: var(--ca-teal);
+  color: white;
+}
+
+.ca-mobile-link {
+  align-items: center;
+  border-radius: 14px;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.72rem;
+  font-weight: 700;
+  gap: 0.2rem;
+  justify-content: center;
+  min-height: 3.25rem;
+  text-decoration: none;
+}
+
+.ca-mobile-link i {
+  font-size: 1rem;
+}
+
+.ca-mobile-active {
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.ca-admin-link {
+  border-radius: 10px;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 650;
+  padding: 0.75rem 0.85rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ca-admin-link i {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  display: inline-flex;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+}
+
+.ca-admin-link:hover,
+.ca-admin-active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.ca-admin-active i {
+  background: var(--ca-gold);
+  color: var(--ca-navy);
+}
+
+.ca-metric-card {
+  border: 0 !important;
+  border-radius: 14px !important;
+  box-shadow: var(--ca-shadow) !important;
+}
+
+.ca-metric-card .p-card-body {
+  padding: 1.25rem !important;
+}
+
+.ca-metric-card .p-card-content {
+  padding: 0 !important;
+}
+
+.ca-metric-icon {
+  align-items: center;
+  border-radius: 14px;
+  display: inline-flex;
+  font-size: 1.1rem;
+  height: 3rem;
+  justify-content: center;
+  width: 3rem;
+}
+
+.ca-clean-table .p-datatable-thead > tr > th {
+  background: #fbfdff;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 0.95rem 1rem;
+  text-transform: uppercase;
+}
+
+.ca-clean-table .p-datatable-tbody > tr > td {
+  border-color: #eef2f7;
+  padding: 0.95rem 1rem;
+  vertical-align: middle;
+}
+
+.ca-clean-table .p-datatable-tbody > tr:hover {
+  background: #f8fafc;
+}
+
+.ca-status {
+  align-items: center;
+  background: rgba(20, 184, 166, 0.12);
+  border: 1px solid rgba(20, 184, 166, 0.2);
+  border-radius: 999px;
+  color: #0f766e;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 700;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+}
+
+.ca-soft-stat {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+}
+
+.ca-soft-stat span {
+  color: var(--ca-muted);
+  display: block;
+  font-size: 0.82rem;
+}
+
+.ca-range {
+  accent-color: var(--ca-teal);
+}
+
+.ca-image-viewer-dialog {
+  border-radius: 0 !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  max-height: 100dvh !important;
+  width: 100vw !important;
+}
+
+.ca-image-viewer-dialog .p-dialog-content {
+  border-radius: 0 !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+.ca-soft-stat strong {
+  color: var(--ca-navy);
+  display: block;
+  font-size: 1.35rem;
+  margin-top: 0.15rem;
+}
+
+.leaflet-container {
+  font-family: inherit;
+}
+
+.p-card {
+  border-radius: 14px;
+}
+
+.p-card .p-card-content {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.p-button {
+  font-weight: 700;
+}
