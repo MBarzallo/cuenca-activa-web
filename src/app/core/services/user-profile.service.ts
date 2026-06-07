@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { firebaseAuth, firebaseStorage } from '../firebase/firebase.client';
 import { AuthUser } from '../models/auth-user.model';
 import { PointsMovement } from '../models/points-movement.model';
+import { AdminUsuario } from '../models/admin-usuario.model';
+import { PaginatedResponse } from '../models/paginated-response.model';
 import { ApiService } from './api.service';
 
 export interface UpdateProfileRequest {
@@ -82,5 +84,30 @@ export class UserProfileService {
       .replace(/_+/g, '_')
       .replace(/^_+|_+$/g, '');
     return `${Date.now()}_${baseName || 'perfil'}${extension}`;
+  }
+
+  listUsersAdmin(filters: {
+    aliasPublico?: string;
+    email?: string;
+    estadoCuenta?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Observable<PaginatedResponse<AdminUsuario>> {
+    const params: any = {};
+    if (filters.aliasPublico) params.aliasPublico = filters.aliasPublico;
+    if (filters.email) params.email = filters.email;
+    if (filters.estadoCuenta) params.estadoCuenta = filters.estadoCuenta;
+    params.limit = filters.limit ?? 20;
+    params.offset = filters.offset ?? 0;
+
+    return this.api.get<PaginatedResponse<AdminUsuario>>('/api/admin/usuarios', params);
+  }
+
+  changeUserStatus(idUsuario: string, estadoCuenta: string): Observable<void> {
+    return this.api.patch<void>(`/api/admin/usuarios/${idUsuario}/estado`, { estadoCuenta });
+  }
+
+  changeUserRoles(idUsuario: string, roles: string[]): Observable<void> {
+    return this.api.patch<void>(`/api/admin/usuarios/${idUsuario}/roles`, { roles });
   }
 }

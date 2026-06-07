@@ -5,8 +5,11 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { CommonModule } from '@angular/common';
 import { Incidencia } from '../../core/models/incidencia.model';
 import { IncidenciasService } from '../../core/services/incidencias.service';
+import { ReportesModeracionService } from '../../core/services/reportes-moderacion.service';
+import { AdminReporteContenido } from '../../core/models/admin-reporte-contenido.model';
 
 interface DashboardSummary {
   totalIncidencias: number;
@@ -19,7 +22,7 @@ interface DashboardSummary {
 @Component({
   selector: 'app-admin-dashboard-page',
   standalone: true,
-  imports: [RouterLink, ButtonModule, CardModule, TableModule, TagModule],
+  imports: [CommonModule, RouterLink, ButtonModule, CardModule, TableModule, TagModule],
   template: `
     <div class="space-y-6">
       <section class="rounded-[28px] bg-[var(--ca-navy)] p-6 text-white shadow-xl shadow-slate-900/10 sm:p-8">
@@ -74,10 +77,10 @@ interface DashboardSummary {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-slate-500">Reportes pendientes</p>
-                <strong class="mt-1 block text-3xl text-slate-400">--</strong>
-                <span class="mt-2 block text-xs text-slate-500">Endpoint admin pendiente</span>
+                <strong class="mt-1 block text-3xl text-red-500">{{ reportesPendientesCount() }}</strong>
+                <span class="mt-2 block text-xs text-slate-500">Esperando moderación</span>
               </div>
-              <span class="ca-metric-icon bg-slate-200 text-[var(--ca-navy)]"><i class="pi pi-flag"></i></span>
+              <span class="ca-metric-icon bg-red-100 text-red-600"><i class="pi pi-flag"></i></span>
             </div>
           </p-card>
         </section>
@@ -155,18 +158,31 @@ interface DashboardSummary {
 
           <p-card styleClass="border-0 shadow-sm">
             <ng-template pTemplate="header">
-              <div class="border-b border-slate-100 px-5 py-4">
-                <h3 class="text-lg font-semibold">Reportes de contenido</h3>
-                <p class="mt-1 text-sm text-slate-500">Moderación pendiente de endpoint admin.</p>
+              <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                <div>
+                  <h3 class="text-lg font-semibold">Reportes de contenido</h3>
+                  <p class="mt-1 text-sm text-slate-500">Bandeja de moderación rápida.</p>
+                </div>
+                <a routerLink="/admin/reportes-contenido" pButton size="small" severity="secondary" outlined icon="pi pi-arrow-right" label="Ver todos"></a>
               </div>
             </ng-template>
-            <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
-              <p class="font-semibold">Sin datos administrativos todavía</p>
-              <p class="mt-2 text-sm leading-6 text-slate-600">
-                El módulo de revisión administrativa está preparado para conectarse cuando esté disponible.
-              </p>
-              <a routerLink="/admin/reportes-contenido" class="mt-4 inline-flex" pButton size="small" severity="secondary" outlined label="Ver módulo"></a>
+            
+            <div *ngIf="reportesPendientes().length > 0; else noReportes" class="space-y-3">
+              <div *ngFor="let reporte of reportesPendientes()" class="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl">
+                <div>
+                  <span class="text-xs font-bold text-slate-500 uppercase">{{ obtenerTipoContenido(reporte) }}</span>
+                  <div class="text-xs text-slate-700 font-semibold mt-1 truncate max-w-[200px]" [title]="reporte.motivo">{{ reporte.motivo }}</div>
+                </div>
+                <a routerLink="/admin/reportes-contenido" pButton size="small" severity="danger" text icon="pi pi-flag"></a>
+              </div>
             </div>
+            <ng-template #noReportes>
+              <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-center">
+                <i class="pi pi-check-circle text-[var(--ca-teal)] text-3xl mb-2 block"></i>
+                <p class="font-semibold text-sm">Plataforma limpia</p>
+                <p class="mt-1 text-xs text-slate-500">No hay reportes de contenido pendientes.</p>
+              </div>
+            </ng-template>
           </p-card>
         </section>
       }
@@ -176,14 +192,24 @@ interface DashboardSummary {
 export class AdminDashboardPageComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('statesChart') statesChart?: ElementRef<HTMLCanvasElement>;
   readonly summary = signal<DashboardSummary | null>(null);
+  readonly reportesPendientesCount = signal<number>(0);
+  readonly reportesPendientes = signal<AdminReporteContenido[]>([]);
   private chart: Chart | null = null;
 
-  constructor(private readonly incidenciasService: IncidenciasService) {}
+  constructor(
+    private readonly incidenciasService: IncidenciasService,
+    private readonly reportesService: ReportesModeracionService
+  ) {}
 
   ngOnInit() {
     this.incidenciasService.getDashboardSummary().subscribe((summary) => {
       this.summary.set(summary);
       this.renderChart();
+    });
+
+    this.reportesService.list({ estadoRevision: 'PENDIENTE', limit: 5 }).subscribe((resp) => {
+      this.reportesPendientesCount.set(resp.total);
+      this.reportesPendientes.set(resp.data);
     });
   }
 
@@ -249,5 +275,13 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewInit, OnDes
         },
       },
     });
+  }
+
+  obtenerTipoContenido(reporte: AdminReporteContenido): string {
+    if (reporte.idIncidencia) return 'Incidencia';
+    if (reporte.idComentario) return 'Comentario';
+    if (reporte.idMultimedia) return 'Imagen';
+    if (reporte.idConfirmacion) return 'Confirmación';
+    return 'Contenido';
   }
 }
