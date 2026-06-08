@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, signal, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -18,132 +18,192 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
   standalone: true,
   imports: [FormsModule, RouterLink, ButtonModule, CardModule, InputTextModule, SelectModule, TagModule],
   template: `
-    <main class="h-[calc(100vh-73px)] min-h-[760px] p-4 lg:h-screen lg:min-h-0 lg:p-5">
-      <section class="grid h-full gap-4 xl:grid-cols-[360px_1fr]">
-        <aside class="flex min-h-0 flex-col gap-4">
-          <p-card styleClass="border-0 shadow-sm">
-            <p class="text-sm font-bold uppercase tracking-[0.18em] text-[var(--ca-teal)]">Mapa ciudadano</p>
-            <h1 class="mt-2 text-2xl font-semibold">Explora incidencias</h1>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Filtra reportes y revisa qué ocurre en diferentes sectores de Cuenca.</p>
-          </p-card>
+    <main class="h-[calc(100vh-125px)] min-h-[450px] xl:h-screen xl:min-h-0 p-4 xl:p-5">
+      <div class="relative flex h-full overflow-hidden w-full min-h-0">
+        <!-- BACKDROP OVERLAY FOR MOBILE -->
+        @if (isMobile() && mobileFiltersOpen()) {
+          <div class="fixed inset-0 z-[1020] bg-slate-900/40 backdrop-blur-xs xl:hidden" (click)="closeMobileFilters()"></div>
+        }
 
-          <p-card styleClass="border-0 shadow-sm">
+        <!-- SIDEBAR (ADAPTIVE: DRAWER ON MOBILE, STATIC SIDEBAR ON DESKTOP) -->
+        <aside 
+          [class.translate-x-0]="!isMobile() && !collapsed() || isMobile() && mobileFiltersOpen()"
+          [class.translate-x-[-100%]]="isMobile() && !mobileFiltersOpen()"
+          [class.xl:w-[360px]]="!collapsed()"
+          [class.xl:w-0]="collapsed()"
+          [class.xl:mr-4]="!collapsed()"
+          [class.xl:mr-0]="collapsed()"
+          [class.xl:opacity-100]="!collapsed()"
+          [class.xl:opacity-0]="collapsed()"
+          [class.xl:pointer-events-none]="collapsed()"
+          [class.overflow-hidden]="collapsed()"
+          class="fixed inset-y-0 left-0 z-[1030] w-80 max-w-[calc(100vw-3rem)] transform bg-white p-5 shadow-2xl transition-all duration-300 ease-in-out xl:static xl:z-auto xl:max-w-none xl:bg-transparent xl:p-0 xl:shadow-none xl:translate-x-0 flex flex-col gap-4 overflow-y-auto max-h-full xl:pr-1 min-h-0 shrink-0"
+        >
+          <!-- Mobile Drawer Header -->
+          <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-1 xl:hidden shrink-0">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-filter text-[var(--ca-teal)] font-bold text-lg"></i>
+              <span class="font-bold text-slate-800 text-base">Filtros y Resultados</span>
+            </div>
+            <button pButton size="small" severity="secondary" rounded [outlined]="true" icon="pi pi-times" (click)="closeMobileFilters()"></button>
+          </div>
+
+          <!-- Filters Card -->
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-start justify-between gap-2">
+              <div>
+                <h1 class="text-xl font-bold tracking-tight text-[var(--ca-navy)]">Explorar incidencias</h1>
+                <p class="text-xs text-slate-500 font-medium">Busca y filtra reportes en Cuenca.</p>
+              </div>
+              <button 
+                (click)="toggleSidebar()" 
+                class="hidden xl:flex h-8 w-8 items-center justify-center rounded-full border border-slate-150 bg-slate-50 text-slate-500 transition hover:bg-slate-100 hover:text-[var(--ca-teal)] cursor-pointer shadow-xs shrink-0"
+                title="Ocultar filtros"
+              >
+                <i class="pi pi-chevron-left text-xs font-bold"></i>
+              </button>
+            </div>
+
             <div class="space-y-4">
               <label class="block">
-                <span class="mb-2 block text-sm font-semibold text-slate-700">Buscar</span>
-                <span class="p-input-icon-left w-full">
-                  <i class="pi pi-search"></i>
+                <span class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Buscar</span>
+                <span class="p-input-icon-left w-full block">
+                  <i class="pi pi-search text-slate-400"></i>
                   <input pInputText class="w-full" [(ngModel)]="searchTerm" (ngModelChange)="refreshMap()" placeholder="Título, sector o dirección" />
                 </span>
               </label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="block">
+                  <span class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Categoría</span>
+                  <p-select class="w-full" [(ngModel)]="categoriaSeleccionada" (ngModelChange)="refreshMap()" [options]="categorias()" optionLabel="nombre" optionValue="codigo" [showClear]="true" placeholder="Todas"></p-select>
+                </label>
+                <label class="block">
+                  <span class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Estado</span>
+                  <p-select class="w-full" [(ngModel)]="estadoSeleccionado" (ngModelChange)="refreshMap()" [options]="estados()" optionLabel="nombre" optionValue="codigo" [showClear]="true" placeholder="Todos"></p-select>
+                </label>
+              </div>
               <label class="block">
-                <span class="mb-2 block text-sm font-semibold text-slate-700">Categoría</span>
-                <p-select class="w-full" [(ngModel)]="categoriaSeleccionada" (ngModelChange)="refreshMap()" [options]="categorias()" optionLabel="nombre" optionValue="codigo" [showClear]="true" placeholder="Todas"></p-select>
-              </label>
-              <label class="block">
-                <span class="mb-2 block text-sm font-semibold text-slate-700">Estado</span>
-                <p-select class="w-full" [(ngModel)]="estadoSeleccionado" (ngModelChange)="refreshMap()" [options]="estados()" optionLabel="nombre" optionValue="codigo" [showClear]="true" placeholder="Todos"></p-select>
-              </label>
-              <label class="block">
-                <span class="mb-2 block text-sm font-semibold text-slate-700">Sector</span>
+                <span class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Sector</span>
                 <p-select class="w-full" [(ngModel)]="sectorSeleccionado" (ngModelChange)="refreshMap()" [options]="sectores()" [showClear]="true" placeholder="Todos"></p-select>
               </label>
-              <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div class="flex items-start gap-3">
-                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[var(--ca-teal)]/10 text-[var(--ca-teal)]">
-                    <i class="pi pi-compass"></i>
-                  </span>
-                  <div class="min-w-0 flex-1">
-                    <p class="font-semibold text-[var(--ca-navy)]">Incidencias cercanas</p>
-                    <p class="mt-1 text-sm leading-5 text-slate-500">Usa tu ubicación para ver reportes dentro del radio elegido.</p>
+              <div class="rounded-xl border border-slate-150 bg-slate-50 p-4">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-compass text-[var(--ca-teal)]"></i>
+                    <span class="text-xs font-bold text-[var(--ca-navy)]">Cerca de mí</span>
                   </div>
-                </div>
-                <label class="mt-4 block">
-                  <span class="mb-2 block text-sm font-semibold text-slate-700">Radio</span>
                   <p-select
-                    class="w-full"
+                    class="w-24"
                     [(ngModel)]="nearbyRadiusKm"
                     [options]="nearbyRadiusOptions"
                     optionLabel="label"
                     optionValue="value"
                     [disabled]="locating()"
                   ></p-select>
-                </label>
-                <div class="mt-4 grid gap-2">
+                </div>
+                <div class="mt-3 flex gap-2">
                   <button
                     pButton
                     icon="pi pi-location-arrow"
-                    label="Ver cerca de mí"
-                    class="w-full justify-center"
+                    label="Buscar cerca"
+                    class="w-full justify-center text-xs"
                     [loading]="locating()"
                     (click)="loadNearby()"
                   ></button>
                   @if (nearbyMode()) {
-                    <button pButton severity="secondary" outlined icon="pi pi-map" label="Mostrar todo Cuenca" class="w-full justify-center" (click)="showAll()"></button>
+                    <button pButton severity="secondary" outlined icon="pi pi-map" label="Ver todo" class="w-full justify-center text-xs" (click)="showAll()"></button>
                   }
                 </div>
               </div>
-              <button pButton severity="secondary" outlined icon="pi pi-filter-slash" label="Limpiar filtros" class="w-full justify-center" (click)="clearFilters()"></button>
+              <button pButton severity="secondary" outlined icon="pi pi-filter-slash" label="Limpiar filtros" class="w-full justify-center transition-colors hover:bg-slate-50" (click)="clearFilters()"></button>
             </div>
-          </p-card>
+          </div>
 
-          <p-card styleClass="min-h-0 flex-1 overflow-hidden border-0 shadow-sm">
-            <ng-template pTemplate="header">
-              <div class="border-b border-slate-100 px-5 py-4">
-              <h2 class="text-lg font-semibold">Resultados</h2>
-                <p class="mt-1 text-sm text-slate-500">
-                  {{ filteredIncidencias().length }} incidencias encontradas
-                  @if (nearbyMode()) {
-                    <span>cerca de ti</span>
-                  }
-                </p>
-              </div>
-            </ng-template>
-            <div class="max-h-[360px] space-y-3 overflow-auto pr-1 xl:max-h-[calc(100vh-520px)]">
+          <!-- Results Card -->
+          <div class="rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col min-h-0">
+            <div class="border-b border-slate-100 px-5 py-4">
+              <h2 class="text-base font-bold text-slate-800">Resultados</h2>
+              <p class="mt-1 text-xs text-slate-500">
+                {{ filteredIncidencias().length }} incidencias encontradas
+                @if (nearbyMode()) {
+                  <span>cerca de ti</span>
+                }
+              </p>
+            </div>
+            
+            <div class="p-4 space-y-3 overflow-y-auto max-h-[340px] xl:max-h-[calc(100vh-560px)]">
               @for (incidencia of filteredIncidencias(); track incidencia.idIncidencia) {
-                <button type="button" class="w-full rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:border-[var(--ca-teal)] hover:bg-slate-50" (click)="selectIncidencia(incidencia)">
-                  <span class="block font-semibold">{{ incidencia.titulo }}</span>
-                  <span class="mt-1 block text-sm text-slate-500">{{ incidencia.nombreSector || incidencia.direccionReferencial || 'Cuenca' }}</span>
+                <button type="button" class="w-full rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-[var(--ca-teal)] hover:bg-slate-50/50 cursor-pointer block" (click)="selectIncidencia(incidencia)">
+                  <span class="block font-bold text-slate-850 text-sm">{{ incidencia.titulo }}</span>
+                  <span class="mt-1 block text-xs text-slate-400 font-medium flex items-center gap-1">
+                    <i class="pi pi-map-marker text-[10px]"></i>
+                    <span>{{ incidencia.nombreSector || incidencia.direccionReferencial || 'Cuenca' }}</span>
+                  </span>
                   <span class="mt-3 flex flex-wrap items-center gap-2">
                     <p-tag [value]="incidencia.nombreEstado" severity="info"></p-tag>
                     @if (distanceLabel(incidencia); as distance) {
-                      <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">{{ distance }}</span>
+                      <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">{{ distance }}</span>
                     }
                   </span>
                 </button>
               } @empty {
-                <p class="rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">No encontramos incidencias con esos filtros.</p>
+                <p class="rounded-xl border border-dashed border-slate-300 p-4 text-center text-xs text-slate-400 font-medium bg-slate-50/50">No encontramos incidencias con esos filtros.</p>
               }
             </div>
-          </p-card>
+          </div>
         </aside>
 
-        <section class="relative min-h-[520px] overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-slate-200">
+        <!-- MAP CONTAINER -->
+        <section class="relative flex-1 min-h-[520px] overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-slate-200">
           <div id="citizen-map" class="h-full min-h-[520px] w-full"></div>
 
+          <!-- Floating Button to Open Filters on Desktop -->
+          @if (collapsed()) {
+            <button 
+              (click)="toggleSidebar()" 
+              class="absolute top-4 left-4 z-[1005] hidden xl:flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-[var(--ca-teal)] cursor-pointer"
+              title="Mostrar filtros y resultados"
+            >
+              <i class="pi pi-filter text-[var(--ca-teal)]"></i>
+              <span>Mostrar filtros</span>
+            </button>
+          }
+
+          <!-- Floating Button to Open Filters on Mobile -->
+          <button 
+            pButton 
+            severity="primary" 
+            rounded
+            icon="pi pi-filter" 
+            label="Filtros"
+            (click)="openMobileFilters()" 
+            class="absolute top-4 left-4 z-[1005] shadow-lg xl:hidden bg-[var(--ca-teal)] border-[var(--ca-teal)] hover:bg-[var(--ca-teal-dark)]"
+          ></button>
+
           @if (selected(); as item) {
-            <div class="absolute bottom-4 left-4 right-4 z-[500] max-w-xl rounded-3xl border border-slate-200 bg-white/95 p-5 shadow-2xl shadow-slate-900/15 backdrop-blur">
+            <div class="absolute bottom-4 left-4 right-4 z-[1005] max-w-xl rounded-3xl border border-slate-200 bg-white/95 p-5 shadow-2xl shadow-slate-900/15 backdrop-blur">
               <div class="flex items-start justify-between gap-4">
                 <div>
-                  <p class="text-sm font-semibold text-[var(--ca-teal)]">{{ item.nombreCategoria }}</p>
-                  <h2 class="mt-1 text-lg font-semibold">{{ item.titulo }}</h2>
-                  <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{{ item.descripcion }}</p>
+                  <p class="text-xs font-bold uppercase tracking-wider text-[var(--ca-teal)]">{{ item.nombreCategoria }}</p>
+                  <h2 class="mt-1.5 text-base font-bold text-slate-800">{{ item.titulo }}</h2>
+                  <p class="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-500">{{ item.descripcion }}</p>
                 </div>
                 <p-tag [value]="item.nombreEstado" severity="info"></p-tag>
               </div>
               <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-                <span class="text-sm text-slate-500">
-                  {{ item.nombreSector || item.direccionReferencial || 'Cuenca' }}
+                <span class="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                  <i class="pi pi-map-marker text-slate-400"></i>
+                  <span>{{ item.nombreSector || item.direccionReferencial || 'Cuenca' }}</span>
                   @if (distanceLabel(item); as distance) {
-                    <span class="ml-2 font-semibold text-[var(--ca-teal)]">{{ distance }}</span>
+                    <span class="ml-1 font-bold text-[var(--ca-teal)]">({{ distance }})</span>
                   }
                 </span>
-                <a [routerLink]="['/incidencias', item.idIncidencia]" pButton size="small" icon="pi pi-eye" label="Ver detalle"></a>
+                <a [routerLink]="['/incidencias', item.idIncidencia]" pButton size="small" icon="pi pi-eye" label="Ver detalle" class="text-xs"></a>
               </div>
             </div>
           }
         </section>
-      </section>
+      </div>
     </main>
   `,
 })
@@ -171,6 +231,10 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
   private userMarker: L.Marker | null = null;
   private userCircle: L.Circle | null = null;
 
+  readonly collapsed = signal(false);
+  readonly mobileFiltersOpen = signal(false);
+  readonly isMobile = signal(false);
+
   constructor(
     private readonly incidenciasService: IncidenciasService,
     private readonly catalogosService: CatalogosService,
@@ -178,6 +242,10 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
   ) {}
 
   ngOnInit() {
+    const saved = localStorage.getItem('ca-map-sidebar-collapsed');
+    this.collapsed.set(saved === 'true');
+    this.checkViewport();
+
     this.incidenciasService.list({ limit: 150, offset: 0 }).subscribe((items) => {
       this.incidencias.set(items);
       this.refreshMap();
@@ -187,16 +255,53 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   ngAfterViewInit() {
-    this.map = L.map('citizen-map').setView([-2.9006, -79.0045], 13);
+    this.map = L.map('citizen-map', { zoomControl: false }).setView([-2.9006, -79.0045], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap',
     }).addTo(this.map);
+    L.control.zoom({ position: 'topright' }).addTo(this.map);
     this.markers.addTo(this.map);
     this.refreshMap();
   }
 
   ngOnDestroy() {
     this.map?.remove();
+  }
+
+  toggleSidebar() {
+    this.collapsed.set(!this.collapsed());
+    localStorage.setItem('ca-map-sidebar-collapsed', String(this.collapsed()));
+    
+    // Trigger size invalidation multiple times during transition
+    const steps = [100, 200, 300];
+    steps.forEach((delay) => {
+      setTimeout(() => {
+        if (this.map) {
+          this.map.invalidateSize({ animate: true });
+        }
+      }, delay);
+    });
+  }
+
+  openMobileFilters() {
+    this.mobileFiltersOpen.set(true);
+  }
+
+  closeMobileFilters() {
+    this.mobileFiltersOpen.set(false);
+  }
+
+  private checkViewport() {
+    const mobile = window.innerWidth < 1280; // xl threshold
+    this.isMobile.set(mobile);
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.checkViewport();
+    if (this.map) {
+      this.map.invalidateSize();
+    }
   }
 
   sectores(): string[] {

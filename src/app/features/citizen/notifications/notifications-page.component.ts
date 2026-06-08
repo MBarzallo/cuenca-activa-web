@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -11,111 +11,85 @@ import { NotificationsService } from '../../../core/services/notifications.servi
 @Component({
   selector: 'app-notifications-page',
   standalone: true,
-  imports: [RouterLink, ButtonModule, CardModule, TagModule],
+  imports: [ButtonModule, CardModule, TagModule],
   template: `
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <section class="mb-6 overflow-hidden rounded-[30px] bg-[var(--ca-navy)] text-white shadow-xl shadow-slate-900/10">
-        <div class="grid gap-5 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div>
-            <p class="text-sm font-bold uppercase tracking-[0.18em] text-[var(--ca-gold)]">Centro de avisos</p>
-            <h1 class="mt-3 text-3xl font-semibold">Notificaciones</h1>
-            <p class="mt-2 max-w-3xl leading-7 text-slate-300">
-              Revisa comentarios, cambios de estado, alertas cercanas y logros de participación.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <button pButton severity="secondary" outlined icon="pi pi-refresh" label="Actualizar" [loading]="loading()" (click)="load()"></button>
-            <button pButton icon="pi pi-check" label="Marcar leídas" [disabled]="unreadCount() === 0 || actionLoading()" [loading]="markingAll()" (click)="markAllAsRead()"></button>
-          </div>
+      <!-- PAGE HEADER: Light and elegant inbox -->
+      <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[var(--ca-teal)]">Centro de avisos</span>
+          <h1 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Notificaciones</h1>
+          <p class="mt-1 text-sm text-slate-500">Mantente al tanto de la actividad de tus reportes, comentarios y alertas locales.</p>
         </div>
-      </section>
+        <div class="flex flex-wrap gap-2.5 shrink-0 sm:self-end">
+          <button pButton severity="secondary" outlined icon="pi pi-refresh" label="Actualizar" [loading]="loading()" (click)="load()" class="hover:bg-slate-50 transition-colors"></button>
+          <button pButton icon="pi pi-check" label="Marcar todas como leídas" [disabled]="unreadCount() === 0 || actionLoading()" [loading]="markingAll()" (click)="markAllAsRead()" class="transition-all"></button>
+        </div>
+      </header>
 
-      <section class="mb-6 grid gap-4 md:grid-cols-3">
-        <p-card styleClass="ca-metric-card">
-          <div class="flex items-center justify-between">
+      <section class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <!-- NOTIFICATIONS LIST -->
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div class="border-b border-slate-100 px-6 py-5 flex items-center justify-between">
             <div>
-              <p class="text-sm text-slate-500">Sin leer</p>
-              <strong class="mt-1 block text-3xl text-[var(--ca-teal)]">{{ unreadCount() }}</strong>
+              <h2 class="text-lg font-bold text-slate-800">Bandeja de entrada</h2>
+              <p class="mt-1 text-sm text-slate-500">Toca un aviso para ver los detalles del reporte.</p>
             </div>
-            <span class="ca-metric-icon bg-teal-50 text-[var(--ca-teal)]"><i class="pi pi-bell"></i></span>
+            @if (unreadCount() > 0) {
+              <span class="inline-flex items-center rounded-full bg-[var(--ca-teal)]/10 px-2.5 py-0.5 text-xs font-bold text-[var(--ca-teal)]">
+                {{ unreadCount() }} pendientes
+              </span>
+            }
           </div>
-        </p-card>
-        <p-card styleClass="ca-metric-card">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-slate-500">Avisos cargados</p>
-              <strong class="mt-1 block text-3xl">{{ notifications().length }}</strong>
-            </div>
-            <span class="ca-metric-icon bg-[var(--ca-navy)] text-white"><i class="pi pi-inbox"></i></span>
-          </div>
-        </p-card>
-        <p-card styleClass="ca-metric-card">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-slate-500">Preferencias</p>
-              <strong class="mt-1 block text-3xl text-[var(--ca-gold)]">{{ enabledPreferences() }}/{{ preferences().length }}</strong>
-            </div>
-            <span class="ca-metric-icon bg-amber-50 text-[var(--ca-gold)]"><i class="pi pi-sliders-h"></i></span>
-          </div>
-        </p-card>
-      </section>
 
-      <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <p-card styleClass="border-0 shadow-sm">
-          <ng-template pTemplate="header">
-            <div class="border-b border-slate-100 px-5 py-4">
-              <h2 class="text-xl font-semibold">Avisos recientes</h2>
-              <p class="mt-1 text-sm text-slate-500">Toca un aviso para abrir el reporte relacionado cuando exista.</p>
-            </div>
-          </ng-template>
-
-          @if (loading()) {
-            <div class="grid gap-3">
-              <div class="h-24 rounded-2xl bg-slate-100"></div>
-              <div class="h-24 rounded-2xl bg-slate-100"></div>
-              <div class="h-24 rounded-2xl bg-slate-100"></div>
-            </div>
-          } @else if (error()) {
-            <div class="rounded-2xl bg-slate-50 p-8 text-center">
-              <i class="pi pi-cloud-off text-3xl text-slate-400"></i>
-              <p class="mt-3 font-semibold">No pudimos cargar tus notificaciones</p>
-              <p class="mt-1 text-sm text-slate-500">Intenta nuevamente en unos segundos.</p>
-              <button pButton class="mt-5" size="small" icon="pi pi-refresh" label="Reintentar" (click)="load()"></button>
-            </div>
-          } @else if (notifications().length === 0) {
-            <div class="rounded-2xl bg-slate-50 p-8 text-center">
-              <i class="pi pi-bell text-3xl text-slate-400"></i>
-              <p class="mt-3 font-semibold">Aún no tienes notificaciones</p>
-              <p class="mt-1 text-sm text-slate-500">Cuando haya comentarios, cambios o alertas relevantes, aparecerán aquí.</p>
-            </div>
-          } @else {
-            <div class="grid gap-3">
-              @for (notification of notifications(); track notification.idNotificacion) {
-                <article
-                  class="group grid cursor-pointer gap-4 rounded-3xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md sm:grid-cols-[52px_1fr_auto]"
-                  [class.border-teal-200]="!notification.leida"
-                  [class.bg-teal-50]="!notification.leida"
-                  [class.border-slate-200]="notification.leida"
-                  [class.bg-white]="notification.leida"
-                  (click)="openNotification(notification)"
-                >
-                  <span class="grid h-12 w-12 place-items-center rounded-2xl" [class]="notificationIconClass(notification.codigoTipo)">
-                    <i [class]="notificationIcon(notification.codigoTipo)"></i>
-                  </span>
-                  <div class="min-w-0">
-                    <div class="flex items-start gap-2">
-                      <h3 class="min-w-0 flex-1 truncate font-semibold text-[var(--ca-navy)]">{{ notification.titulo || notification.nombreTipo }}</h3>
-                      @if (!notification.leida) {
-                        <span class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--ca-gold)]"></span>
-                      }
+          <div class="p-4 sm:p-6">
+            @if (loading()) {
+              <div class="space-y-3">
+                <div class="h-20 rounded-xl bg-slate-50 animate-pulse border border-slate-100"></div>
+                <div class="h-20 rounded-xl bg-slate-50 animate-pulse border border-slate-100"></div>
+              </div>
+            } @else if (error()) {
+              <div class="rounded-xl bg-red-50/50 border border-red-100 p-8 text-center">
+                <i class="pi pi-cloud-off text-2xl text-red-500"></i>
+                <p class="mt-3 font-bold text-red-800">Error al cargar las notificaciones</p>
+                <p class="mt-0.5 text-xs text-red-600">No pudimos sincronizar tu bandeja en este momento.</p>
+                <button pButton class="mt-4" size="small" icon="pi pi-refresh" label="Reintentar" (click)="load()"></button>
+              </div>
+            } @else if (notifications().length === 0) {
+              <div class="rounded-xl bg-slate-50/50 border border-slate-100 p-8 text-center">
+                <i class="pi pi-bell text-2xl text-slate-400"></i>
+                <p class="mt-3 font-bold text-slate-700">Bandeja limpia</p>
+                <p class="mt-1 text-xs text-slate-500">No tienes notificaciones en este momento. ¡Buen trabajo!</p>
+              </div>
+            } @else {
+              <div class="divide-y divide-slate-100">
+                @for (notification of notifications(); track notification.idNotificacion) {
+                  <article
+                    class="group py-4 first:pt-0 last:pb-0 flex items-start gap-4 cursor-pointer hover:bg-slate-50/50 rounded-xl px-3 -mx-3 transition-colors duration-200"
+                    (click)="openNotification(notification)"
+                  >
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl" [class]="notificationIconClass(notification.codigoTipo)">
+                      <i [class]="notificationIcon(notification.codigoTipo) + ' text-sm'"></i>
+                    </span>
+                    
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-start gap-2 justify-between">
+                        <h3 class="font-bold text-sm" [class.text-slate-900]="!notification.leida" [class.text-slate-600]="notification.leida">
+                          {{ notification.titulo || notification.nombreTipo }}
+                        </h3>
+                        <span class="text-[11px] font-medium text-slate-400 shrink-0">{{ relativeDate(notification.creadaEn) }}</span>
+                      </div>
+                      <p class="mt-1 text-xs leading-relaxed text-slate-500" [class.font-medium]="!notification.leida">
+                        {{ notification.mensaje }}
+                      </p>
+                      <div class="mt-2.5 flex items-center gap-2">
+                        <p-tag [value]="notification.nombreTipo" [severity]="tagSeverity(notification.codigoTipo)"></p-tag>
+                        @if (!notification.leida) {
+                          <span class="inline-flex h-2 w-2 rounded-full bg-[var(--ca-gold)]"></span>
+                        }
+                      </div>
                     </div>
-                    <p class="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">{{ notification.mensaje }}</p>
-                    <div class="mt-3 flex flex-wrap items-center gap-2">
-                      <p-tag [value]="notification.nombreTipo" [severity]="tagSeverity(notification.codigoTipo)"></p-tag>
-                      <span class="text-xs font-semibold text-slate-400">{{ relativeDate(notification.creadaEn) }}</span>
-                    </div>
-                  </div>
-                  <div class="flex items-center justify-end gap-2 sm:flex-col sm:items-end sm:justify-center">
+
                     @if (!notification.leida) {
                       <button
                         pButton
@@ -124,47 +98,41 @@ import { NotificationsService } from '../../../core/services/notifications.servi
                         severity="secondary"
                         outlined
                         icon="pi pi-check"
-                        label="Leída"
                         [loading]="markingId() === notification.idNotificacion"
                         (click)="markAsRead(notification, $event)"
+                        class="p-button-text hover:bg-slate-100 rounded-lg shrink-0 self-center"
                       ></button>
                     }
-                    @if (notification.idIncidencia) {
-                      <span class="text-xs font-semibold text-slate-400">Ver reporte</span>
-                    }
-                  </div>
-                </article>
-              }
-            </div>
-          }
-        </p-card>
-
-        <aside class="space-y-4 xl:sticky xl:top-8 xl:self-start">
-          <p-card styleClass="border-0 shadow-sm">
-            <ng-template pTemplate="header">
-              <div class="border-b border-slate-100 px-5 py-4">
-                <h2 class="text-lg font-semibold">Preferencias</h2>
-                <p class="mt-1 text-sm text-slate-500">Elige qué avisos quieres recibir.</p>
+                  </article>
+                }
               </div>
-            </ng-template>
+            }
+          </div>
+        </div>
+
+        <!-- PREFERENCES SIDEBAR -->
+        <aside class="space-y-6">
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 class="text-base font-bold text-slate-800 mb-1.5">Preferencias</h2>
+            <p class="text-xs text-slate-500 mb-4">Personaliza los tipos de notificaciones que deseas recibir.</p>
 
             @if (preferencesLoading()) {
-              <div class="grid gap-3">
-                <div class="h-20 rounded-2xl bg-slate-100"></div>
-                <div class="h-20 rounded-2xl bg-slate-100"></div>
+              <div class="space-y-3">
+                <div class="h-16 rounded-xl bg-slate-50 animate-pulse border border-slate-100"></div>
+                <div class="h-16 rounded-xl bg-slate-50 animate-pulse border border-slate-100"></div>
               </div>
             } @else if (preferences().length === 0) {
-              <p class="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">No hay preferencias disponibles por ahora.</p>
+              <p class="rounded-xl bg-slate-50/50 border border-slate-100 p-4 text-xs text-slate-500 text-center">No hay preferencias por configurar.</p>
             } @else {
-              <div class="grid gap-4">
+              <div class="space-y-4">
                 @for (preference of preferences(); track preference.codigoTipo) {
-                  <section class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                  <div class="rounded-xl border border-slate-150 bg-slate-50 p-4">
                     <div class="flex items-start justify-between gap-3">
                       <div>
-                        <h3 class="font-semibold">{{ preference.nombreTipo }}</h3>
-                        <p class="mt-1 text-sm text-slate-500">{{ preferenceDescription(preference.codigoTipo) }}</p>
+                        <h3 class="text-xs font-bold text-slate-800">{{ preference.nombreTipo }}</h3>
+                        <p class="mt-1 text-[11px] leading-relaxed text-slate-400">{{ preferenceDescription(preference.codigoTipo) }}</p>
                       </div>
-                      <label class="relative inline-flex cursor-pointer items-center">
+                      <label class="relative inline-flex cursor-pointer items-center shrink-0">
                         <input
                           class="peer sr-only"
                           type="checkbox"
@@ -172,19 +140,19 @@ import { NotificationsService } from '../../../core/services/notifications.servi
                           [disabled]="updatingPreference() === preference.codigoTipo"
                           (change)="togglePreference(preference, $event)"
                         />
-                        <span class="h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-[var(--ca-teal)] peer-disabled:opacity-60"></span>
-                        <span class="absolute left-1 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+                        <span class="h-5 w-9 rounded-full bg-slate-300 transition peer-checked:bg-[var(--ca-teal)] peer-disabled:opacity-60"></span>
+                        <span class="absolute left-0.5 h-4 w-4 rounded-full bg-white shadow transition peer-checked:translate-x-4"></span>
                       </label>
                     </div>
 
                     @if (preference.codigoTipo === 'INCIDENCIA_CERCANA') {
-                      <div class="mt-4">
-                        <div class="mb-2 flex items-center justify-between text-sm">
-                          <span class="font-semibold text-slate-700">Radio de cercanía</span>
-                          <span class="text-slate-500">{{ normalizedRadius(preference.radioCercaniaKm).toFixed(1) }} km</span>
+                      <div class="mt-4 pt-3 border-t border-slate-200/60">
+                        <div class="mb-2 flex items-center justify-between text-xs font-semibold text-slate-600">
+                          <span>Radio de alerta</span>
+                          <span class="text-[var(--ca-teal)]">{{ normalizedRadius(preference.radioCercaniaKm).toFixed(1) }} km</span>
                         </div>
                         <input
-                          class="ca-range w-full"
+                          class="ca-range w-full accent-[var(--ca-teal)]"
                           type="range"
                           min="0.5"
                           max="20"
@@ -193,25 +161,24 @@ import { NotificationsService } from '../../../core/services/notifications.servi
                           [disabled]="!preference.habilitada || updatingPreference() === preference.codigoTipo"
                           (change)="updateRadius(preference, $event)"
                         />
-                        <div class="mt-1 flex justify-between text-xs text-slate-400">
+                        <div class="mt-1 flex justify-between text-[10px] font-bold text-slate-400">
                           <span>0.5 km</span>
                           <span>20 km</span>
                         </div>
-                        <p class="mt-3 text-xs leading-5 text-slate-500">Este rango se usa para alertas de incidencias cercanas.</p>
                       </div>
                     }
-                  </section>
+                  </div>
                 }
               </div>
             }
-          </p-card>
+          </div>
 
-          <p-card styleClass="border-0 bg-[var(--ca-navy)] text-white shadow-sm">
-            <i class="pi pi-info-circle text-2xl text-[var(--ca-gold)]"></i>
-            <h2 class="mt-4 text-lg font-semibold">Avisos ciudadanos</h2>
-            <p class="mt-3 text-sm leading-6 text-slate-300">Las notificaciones te ayudan a seguir reportes, cambios y actividad cercana sin perder contexto.</p>
-            <a routerLink="/incidencias" class="mt-5 inline-flex" pButton severity="secondary" outlined icon="pi pi-list" label="Ver incidencias"></a>
-          </p-card>
+          <!-- Info Helper Card -->
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-6">
+            <i class="pi pi-info-circle text-xl text-[var(--ca-teal)]"></i>
+            <h2 class="mt-3 text-base font-bold text-slate-800">Bandeja de avisos</h2>
+            <p class="mt-2 text-xs leading-relaxed text-slate-500">Mantener tus notificaciones al día te ayuda a conocer de inmediato cuándo se resuelven o validan los reportes en tu sector.</p>
+          </div>
         </aside>
       </section>
     </main>

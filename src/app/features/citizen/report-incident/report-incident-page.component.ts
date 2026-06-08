@@ -30,169 +30,197 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
   ],
   template: `
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <!-- PAGE HEADER: Light and citizen-focused -->
+      <header class="mb-8">
+        <span class="text-xs font-bold uppercase tracking-wider text-[var(--ca-teal)]">Participación ciudadana</span>
+        <h1 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Crear nuevo reporte</h1>
+        <p class="mt-2 text-sm text-slate-500">Registra un problema o incidencia en la ciudad para que el equipo municipal y la comunidad puedan dar el seguimiento oportuno.</p>
+      </header>
+
+      <section class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div class="space-y-6">
-          <section class="overflow-hidden rounded-[30px] bg-[var(--ca-navy)] text-white shadow-xl shadow-slate-900/10">
-            <div class="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_240px] lg:items-end">
-              <div>
-                <p class="text-sm font-bold uppercase tracking-[0.18em] text-[var(--ca-gold)]">Nuevo reporte ciudadano</p>
-                <h1 class="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">Reporta una incidencia en Cuenca</h1>
-                <p class="mt-3 max-w-2xl leading-7 text-slate-300">
-                  Comparte una descripción clara, marca tu ubicación y, si puedes, agrega una foto para ayudar a entender mejor lo que ocurre.
-                </p>
-              </div>
-              <div class="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur">
-                <i class="pi pi-map-marker text-2xl text-[var(--ca-gold)]"></i>
-                <p class="mt-3 text-sm leading-6 text-slate-200">La ubicación permite que otros ciudadanos encuentren el reporte en el mapa.</p>
-              </div>
-            </div>
-          </section>
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <form [formGroup]="form" class="space-y-8" (ngSubmit)="submit()">
+              <!-- SECTION 1: DETALLES -->
+              <section class="space-y-4">
+                <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--ca-teal)]/10 text-xs font-bold text-[var(--ca-teal)]">1</span>
+                  <h2 class="text-base font-bold text-slate-800">Detalles del reporte</h2>
+                </div>
 
-          <p-card styleClass="border-0 shadow-sm">
-            <form [formGroup]="form" class="grid gap-5" (ngSubmit)="submit()">
-              <div class="grid gap-5 md:grid-cols-2">
-                <label class="block">
-                  <span class="mb-2 block text-sm font-semibold text-slate-700">Categoría</span>
-                  <p-select
-                    class="w-full"
-                    formControlName="idCategoria"
-                    [options]="categorias()"
-                    optionLabel="nombre"
-                    optionValue="idCategoria"
-                    placeholder="Selecciona una categoría"
-                  ></p-select>
-                  @if (controlInvalid('idCategoria')) {
-                    <small class="mt-2 block text-red-600">Selecciona una categoría.</small>
-                  }
-                </label>
+                <div class="grid gap-5 md:grid-cols-2">
+                  <label class="block">
+                    <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Categoría</span>
+                    <p-select
+                      class="w-full"
+                      formControlName="idCategoria"
+                      [options]="categorias()"
+                      optionLabel="nombre"
+                      optionValue="idCategoria"
+                      placeholder="Selecciona una categoría"
+                    ></p-select>
+                    @if (controlInvalid('idCategoria')) {
+                      <small class="mt-2 block text-red-600">Selecciona una categoría.</small>
+                    }
+                  </label>
+
+                  <label class="block">
+                    <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Referencia del lugar</span>
+                    <input pInputText class="w-full" formControlName="direccionReferencial" placeholder="Ej. Av. Solano y Remigio Crespo" />
+                    <small class="mt-1.5 block text-xs text-slate-400">Opcional. Ayuda a ubicar el punto de referencia.</small>
+                  </label>
+                </div>
 
                 <label class="block">
-                  <span class="mb-2 block text-sm font-semibold text-slate-700">Referencia del lugar</span>
-                  <input pInputText class="w-full" formControlName="direccionReferencial" placeholder="Ej. Av. Solano y Remigio Crespo" />
-                  <small class="mt-2 block text-slate-500">Opcional, pero ayuda a ubicar mejor el reporte.</small>
-                </label>
-              </div>
-
-              <label class="block">
-                <span class="mb-2 block text-sm font-semibold text-slate-700">Título</span>
-                <input pInputText class="w-full" formControlName="titulo" maxlength="80" placeholder="Describe el problema en pocas palabras" />
-                <div class="mt-2 flex justify-between gap-3 text-xs">
-                  @if (controlInvalid('titulo')) {
-                    <small class="text-red-600">Escribe un título para el reporte.</small>
-                  } @else {
-                    <small class="text-slate-500">Máximo 80 caracteres.</small>
-                  }
-                  <span class="text-slate-400">{{ form.controls.titulo.value.length }}/80</span>
-                </div>
-              </label>
-
-              <label class="block">
-                <span class="mb-2 block text-sm font-semibold text-slate-700">Descripción</span>
-                <textarea
-                  pTextarea
-                  class="min-h-36 w-full resize-y"
-                  formControlName="descripcion"
-                  maxlength="500"
-                  placeholder="Cuenta qué sucede, desde cuándo ocurre y cualquier detalle que ayude."
-                ></textarea>
-                <div class="mt-2 flex justify-between gap-3 text-xs">
-                  @if (controlInvalid('descripcion')) {
-                    <small class="text-red-600">Agrega una descripción del problema.</small>
-                  } @else {
-                    <small class="text-slate-500">Sé concreto y evita datos personales innecesarios.</small>
-                  }
-                  <span class="text-slate-400">{{ form.controls.descripcion.value.length }}/500</span>
-                </div>
-              </label>
-
-              <section class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
-                  <div>
-                    <div class="flex flex-wrap items-center gap-2">
-                      <h2 class="text-base font-semibold">Ubicación del reporte</h2>
-                      @if (hasLocation()) {
-                        <p-tag value="Ubicación lista" severity="success"></p-tag>
-                      } @else {
-                        <p-tag value="Pendiente" severity="warn"></p-tag>
-                      }
-                    </div>
-                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ locationText() }}</p>
+                  <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Título del reporte</span>
+                  <input pInputText class="w-full" formControlName="titulo" maxlength="80" placeholder="Escribe un título breve y claro (ej: Bache profundo en la calle...)" />
+                  <div class="mt-2 flex justify-between gap-3 text-xs">
+                    @if (controlInvalid('titulo')) {
+                      <small class="text-red-600 font-medium">Escribe un título para el reporte.</small>
+                    } @else {
+                      <small class="text-slate-400">Máximo 80 caracteres.</small>
+                    }
+                    <span class="text-slate-400">{{ form.controls.titulo.value.length }}/80</span>
                   </div>
-                  <button
-                    pButton
-                    type="button"
-                    severity="secondary"
-                    outlined
-                    icon="pi pi-crosshairs"
-                    [loading]="locating()"
-                    label="Usar mi ubicación"
-                    (click)="useCurrentLocation()"
-                  ></button>
-                </div>
-                <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                  <div id="report-incident-map" class="h-72"></div>
-                </div>
-                <div class="mt-3 flex flex-col gap-2 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-                  <span>Haz clic en el mapa o arrastra el marcador para ajustar el punto exacto.</span>
-                  @if (hasLocation()) {
-                    <span class="font-semibold text-slate-600">{{ latitud()!.toFixed(6) }}, {{ longitud()!.toFixed(6) }}</span>
-                  }
-                </div>
+                </label>
+
+                <label class="block">
+                  <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Descripción detallada</span>
+                  <textarea
+                    pTextarea
+                    class="min-h-32 w-full resize-y"
+                    formControlName="descripcion"
+                    maxlength="500"
+                    placeholder="Describe el problema, cuándo comenzó o si representa algún riesgo inmediato."
+                  ></textarea>
+                  <div class="mt-2 flex justify-between gap-3 text-xs">
+                    @if (controlInvalid('descripcion')) {
+                      <small class="text-red-600 font-medium">Agrega una descripción del problema.</small>
+                    } @else {
+                      <small class="text-slate-400 font-normal">Sé específico. No agregues datos personales.</small>
+                    }
+                    <span class="text-slate-400">{{ form.controls.descripcion.value.length }}/500</span>
+                  </div>
+                </label>
               </section>
 
-              <section class="grid gap-4 rounded-3xl border border-dashed border-slate-300 bg-white p-4 md:grid-cols-[180px_1fr] md:items-center">
-                <div class="grid min-h-36 place-items-center overflow-hidden rounded-2xl bg-slate-100">
-                  @if (imagePreview()) {
-                    <img [src]="imagePreview()" alt="Imagen seleccionada" class="h-full max-h-48 w-full object-cover" />
-                  } @else {
-                    <div class="px-4 text-center text-slate-500">
-                      <i class="pi pi-image text-2xl"></i>
-                      <p class="mt-2 text-sm font-medium">Foto opcional</p>
-                    </div>
-                  }
+              <!-- SECTION 2: UBICACIÓN -->
+              <section class="space-y-4">
+                <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--ca-teal)]/10 text-xs font-bold text-[var(--ca-teal)]">2</span>
+                  <h2 class="text-base font-bold text-slate-800">Ubicación exacta</h2>
                 </div>
-                <div>
-                  <h2 class="font-semibold">Agrega una foto si la tienes</h2>
-                  <p class="mt-2 text-sm leading-6 text-slate-600">Puede ayudar a entender mejor la incidencia. Se aceptan JPG, PNG o WEBP hasta 5 MB.</p>
-                  <div class="mt-4 flex flex-wrap gap-2">
-                    <label class="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--ca-navy)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
-                      <i class="pi pi-upload"></i>
-                      Seleccionar imagen
-                      <input class="hidden" type="file" accept="image/jpeg,image/png,image/webp" (change)="selectImage($event)" />
-                    </label>
-                    @if (selectedImage()) {
-                      <button pButton type="button" size="small" severity="secondary" outlined icon="pi pi-times" label="Quitar" (click)="clearImage()"></button>
+
+                <div class="rounded-xl border border-slate-150 bg-slate-50 p-4">
+                  <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+                    <div>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm font-semibold text-slate-800">Punto de ubicación</span>
+                        @if (hasLocation()) {
+                          <p-tag value="Ubicación configurada" severity="success"></p-tag>
+                        } @else {
+                          <p-tag value="Ubicación pendiente" severity="warn"></p-tag>
+                        }
+                      </div>
+                      <p class="mt-1.5 text-xs text-slate-500 leading-relaxed">{{ locationText() }}</p>
+                    </div>
+                    <button
+                      pButton
+                      type="button"
+                      severity="secondary"
+                      outlined
+                      icon="pi pi-crosshairs"
+                      [loading]="locating()"
+                      label="Detectar mi ubicación"
+                      (click)="useCurrentLocation()"
+                      class="bg-white"
+                    ></button>
+                  </div>
+                  <div class="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <div id="report-incident-map" class="h-72"></div>
+                  </div>
+                  <div class="mt-3 flex flex-col gap-2 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+                    <span>Haz clic en el mapa o arrastra el marcador rojo para señalar el punto exacto.</span>
+                    @if (hasLocation()) {
+                      <span class="font-semibold text-slate-500">{{ latitud()!.toFixed(6) }}, {{ longitud()!.toFixed(6) }}</span>
                     }
                   </div>
-                  @if (selectedImage()) {
-                    <p class="mt-3 truncate text-sm text-slate-500">{{ selectedImage()?.name }}</p>
-                  }
                 </div>
               </section>
 
+              <!-- SECTION 3: FOTO/EVIDENCIA -->
+              <section class="space-y-4">
+                <div class="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--ca-teal)]/10 text-xs font-bold text-[var(--ca-teal)]">3</span>
+                  <h2 class="text-base font-bold text-slate-800">Foto o evidencia (Opcional)</h2>
+                </div>
+
+                <div class="grid gap-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 p-4 md:grid-cols-[160px_1fr] md:items-center">
+                  <div class="grid h-32 w-full place-items-center overflow-hidden rounded-xl bg-white border border-slate-200">
+                    @if (imagePreview()) {
+                      <img [src]="imagePreview()" alt="Imagen seleccionada" class="h-full w-full object-cover" />
+                    } @else {
+                      <div class="px-2 text-center text-slate-400">
+                        <i class="pi pi-image text-xl"></i>
+                        <p class="mt-1 text-[11px] font-semibold uppercase tracking-wider">Sin foto</p>
+                      </div>
+                    }
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-semibold text-slate-700">Sube una fotografía de la zona</h3>
+                    <p class="mt-1 text-xs text-slate-400 leading-relaxed">Formato JPG, PNG o WEBP. Tamaño máximo de archivo: 5 MB.</p>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                      <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[var(--ca-teal)] px-3.5 py-1.5 text-xs font-semibold text-white transition hover:opacity-90">
+                        <i class="pi pi-upload text-xs"></i>
+                        Seleccionar imagen
+                        <input class="hidden" type="file" accept="image/jpeg,image/png,image/webp" (change)="selectImage($event)" />
+                      </label>
+                      @if (selectedImage()) {
+                        <button pButton type="button" size="small" severity="danger" outlined icon="pi pi-trash" label="Eliminar" (click)="clearImage()"></button>
+                      }
+                    </div>
+                    @if (selectedImage()) {
+                      <p class="mt-2 truncate text-xs font-semibold text-slate-500">{{ selectedImage()?.name }}</p>
+                    }
+                  </div>
+                </div>
+              </section>
+
+              <!-- SUBMIT BUTTONS -->
               <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
                 <a routerLink="/incidencias" pButton type="button" severity="secondary" outlined icon="pi pi-arrow-left" label="Cancelar"></a>
-                <button pButton type="submit" icon="pi pi-send" [loading]="submitting()" label="Publicar reporte"></button>
+                <button pButton type="submit" icon="pi pi-send" [loading]="submitting()" label="Publicar reporte" class="px-6"></button>
               </div>
             </form>
-          </p-card>
+          </div>
         </div>
 
-        <aside class="space-y-4 xl:sticky xl:top-8 xl:self-start">
-          <p-card styleClass="border-0 shadow-sm">
-            <h2 class="text-lg font-semibold">Antes de publicar</h2>
-            <div class="mt-4 space-y-3 text-sm leading-6 text-slate-600">
-              <p class="rounded-2xl bg-slate-50 p-3">Describe un problema real que pueda ubicarse en la ciudad.</p>
-              <p class="rounded-2xl bg-slate-50 p-3">Evita incluir nombres, teléfonos o datos personales de terceros.</p>
-              <p class="rounded-2xl bg-slate-50 p-3">Una foto clara puede ayudar, pero no es obligatoria.</p>
+        <aside class="space-y-6 xl:sticky xl:top-8 xl:self-start">
+          <!-- Guide Card -->
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 class="text-base font-bold text-slate-800">Antes de publicar</h2>
+            <div class="mt-4 space-y-3 text-sm text-slate-600">
+              <div class="flex items-start gap-2.5 rounded-xl bg-slate-50 p-3">
+                <i class="pi pi-check-circle text-[var(--ca-teal)] mt-0.5 shrink-0"></i>
+                <p class="text-xs">Describe un problema real y de interés comunitario en la ciudad.</p>
+              </div>
+              <div class="flex items-start gap-2.5 rounded-xl bg-slate-50 p-3">
+                <i class="pi pi-exclamation-triangle text-[var(--ca-gold)] mt-0.5 shrink-0"></i>
+                <p class="text-xs">Evita incluir nombres propios, teléfonos o información confidencial.</p>
+              </div>
+              <div class="flex items-start gap-2.5 rounded-xl bg-slate-50 p-3">
+                <i class="pi pi-image text-slate-500 mt-0.5 shrink-0"></i>
+                <p class="text-xs">Una foto clara ayuda a catalogar y atender la incidencia mucho más rápido.</p>
+              </div>
             </div>
-          </p-card>
+          </div>
 
-          <p-card styleClass="border-0 bg-[var(--ca-navy)] text-white shadow-sm">
-            <i class="pi pi-shield text-2xl text-[var(--ca-gold)]"></i>
-            <h2 class="mt-4 text-lg font-semibold">Reporte con seguimiento</h2>
-            <p class="mt-3 text-sm leading-6 text-slate-300">Después de publicar podrás revisar el estado, comentarios y validaciones desde el detalle.</p>
-          </p-card>
+          <!-- Info Card -->
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-6">
+            <i class="pi pi-shield text-xl text-[var(--ca-teal)]"></i>
+            <h2 class="mt-3 text-base font-bold text-slate-800">Seguimiento ciudadano</h2>
+            <p class="mt-2 text-xs leading-relaxed text-slate-500">Una vez enviado, recibirás notificaciones cuando otros vecinos voten por tu reporte o cuando personal municipal actualice el estado del caso.</p>
+          </div>
         </aside>
       </section>
     </main>

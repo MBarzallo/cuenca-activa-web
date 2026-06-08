@@ -67,6 +67,7 @@ body {
   padding: 0.8rem 0.9rem;
   text-decoration: none;
   transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  border-left: 3px solid transparent;
 }
 
 .ca-public-link i {
@@ -81,16 +82,58 @@ body {
   width: 2.1rem;
 }
 
-.ca-public-link:hover,
-.ca-public-active {
+.ca-public-link:hover {
   background: #f0fdfa;
   color: #0f766e;
+}
+
+.ca-public-active {
+  background: #f0fdfa !important;
+  color: #0f766e !important;
+  border-left: 3px solid var(--ca-teal) !important;
+  border-radius: 12px !important;
 }
 
 .ca-public-active i {
   background: var(--ca-teal);
   color: white;
 }
+
+/* Compact sidebar links override */
+.ca-compact-link {
+  justify-content: center !important;
+  padding: 0 !important;
+  width: 3rem !important; /* 48px */
+  height: 3rem !important; /* 48px */
+  margin: 0.25rem auto !important; /* Center horizontally, space vertically */
+  border-radius: 12px !important;
+  border-left: none !important;
+  gap: 0 !important;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Override active state for compact link */
+.ca-compact-link.ca-public-active {
+  background: #f0fdfa !important; /* Soft teal background */
+  color: #0f766e !important; /* Teal color */
+  border-left: none !important;
+  border-radius: 12px !important;
+}
+
+/* Override icon styling inside compact link */
+.ca-compact-link i {
+  background: transparent !important;
+  border: none !important;
+  height: auto !important;
+  width: auto !important;
+  font-size: 1.25rem !important; /* Consistent icon size */
+  color: inherit !important;
+}
+
+.ca-compact-link.ca-public-active i {
+  color: #0f766e !important;
+}
+
 
 .ca-mobile-link {
   align-items: center;
@@ -126,6 +169,7 @@ body {
   padding: 0.75rem 0.85rem;
   text-decoration: none;
   white-space: nowrap;
+  border-left: 3px solid transparent;
 }
 
 .ca-admin-link i {
@@ -138,15 +182,22 @@ body {
   width: 2rem;
 }
 
-.ca-admin-link:hover,
-.ca-admin-active {
-  background: rgba(255, 255, 255, 0.1);
+.ca-admin-link:hover {
+  background: rgba(255, 255, 255, 0.06);
   color: #fff;
 }
 
-.ca-admin-active i {
-  background: var(--ca-gold);
-  color: var(--ca-navy);
+.ca-admin-active {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  border-left: 3px solid var(--ca-gold) !important;
+  border-radius: 10px !important;
+}
+
+/* Foco visual accesible e interactivo */
+*:focus-visible {
+  outline: 2px solid var(--ca-teal) !important;
+  outline-offset: 2px !important;
 }
 
 .ca-metric-card {
@@ -260,3 +311,24 @@ body {
 .p-button {
   font-weight: 700;
 }
+
+/* Restaura la funcionalidad del wrapper p-input-icon-left en PrimeNG v18+ / v21 */
+.p-input-icon-left {
+  position: relative;
+  display: inline-block;
+}
+
+.p-input-icon-left > i {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.p-input-icon-left > input {
+  padding-left: 2.75rem !important;
+}
+

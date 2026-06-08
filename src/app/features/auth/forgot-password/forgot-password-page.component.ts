@@ -13,22 +13,93 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, ButtonModule, CardModule, InputTextModule, MessageModule],
   template: `
-    <main class="min-h-screen bg-[var(--ca-bg)] px-4 py-6 sm:px-8">
-      <section class="mx-auto grid min-h-[calc(100vh-48px)] max-w-5xl place-items-center">
-        <div class="w-full max-w-xl overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.10)]">
-          <div class="bg-[var(--ca-navy)] p-7 text-white sm:p-9">
-            <div class="flex items-center gap-4">
-              <span class="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--ca-gold)] text-lg font-black text-[var(--ca-navy)]">CA</span>
+    <main class="min-h-screen w-full bg-white">
+      <div class="grid min-h-screen w-full lg:grid-cols-2">
+
+        <!-- Panel visual (Left) -->
+        <aside class="relative hidden flex-col justify-between overflow-hidden bg-[var(--ca-navy)] p-12 text-white lg:flex">
+          <div class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[var(--ca-teal)]/25 blur-3xl"></div>
+          <div class="absolute -bottom-20 left-10 h-64 w-64 rounded-full bg-[var(--ca-gold)]/20 blur-3xl"></div>
+
+          <!-- Header / Logo -->
+          <div class="relative">
+            <a routerLink="/" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
+              <img src="/logo/icon_only_white.png" class="h-14 w-14 object-contain" alt="CA Logo" />
               <div>
-                <p class="text-xl font-black">CuencaActiva</p>
+                <p class="text-xl font-black tracking-tight text-white">CuencaActiva</p>
                 <p class="text-sm text-slate-300">Recuperación de acceso</p>
               </div>
+            </a>
+
+            <div class="mt-24 max-w-md">
+              <p class="text-sm font-bold uppercase tracking-[0.28em] text-[var(--ca-gold)]">Contraseña</p>
+              <h1 class="mt-5 text-4xl font-black leading-tight tracking-tight xl:text-5xl">Recupera el acceso a tu cuenta.</h1>
+              <p class="mt-6 text-base leading-8 text-slate-300">Te enviaremos un enlace a tu correo electrónico para que puedas crear una nueva contraseña de forma segura.</p>
             </div>
-            <h1 class="mt-8 text-3xl font-black">Recuperar contraseña</h1>
-            <p class="mt-3 leading-7 text-slate-300">Te enviaremos un enlace a tu correo para crear una nueva contraseña.</p>
           </div>
 
-          <div class="p-6 sm:p-9">
+          <!-- Beneficios -->
+          <div class="relative grid gap-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+                <div class="mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-[var(--ca-teal)]/20 text-[var(--ca-teal)]">
+                  <i class="pi pi-map-marker"></i>
+                </div>
+                <p class="text-sm font-bold">Reportes cercanos</p>
+                <p class="mt-2 text-xs leading-5 text-slate-300">
+                  Consulta incidencias visibles en el mapa ciudadano.
+                </p>
+              </div>
+
+              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+                <div class="mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-[var(--ca-gold)]/20 text-[var(--ca-gold)]">
+                  <i class="pi pi-comments"></i>
+                </div>
+                <p class="text-sm font-bold">Participación útil</p>
+                <p class="mt-2 text-xs leading-5 text-slate-300">
+                  Valida reportes, comenta y aporta información.
+                </p>
+              </div>
+            </div>
+
+            <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+              <div class="flex items-center justify-between gap-4">
+                <div>
+                  <p class="text-sm font-bold text-white">Plataforma comunitaria</p>
+                  <p class="mt-1 text-xs text-slate-300">
+                    Información clara para mejorar la ciudad.
+                  </p>
+                </div>
+
+                <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white text-[var(--ca-navy)]">
+                  <i class="pi pi-shield"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Formulario (Right) -->
+        <section class="flex min-h-screen items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-16">
+          <div class="w-full max-w-[420px]">
+            <!-- Header móvil -->
+            <div class="mb-10 lg:hidden">
+              <a routerLink="/" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
+                <img src="/logo/icon_only.png" class="h-14 w-14 object-contain" alt="CA Logo" />
+
+                <div>
+                  <p class="text-xl font-black text-[var(--ca-navy)]">CuencaActiva</p>
+                  <p class="text-sm text-slate-500">Gestión ciudadana</p>
+                </div>
+              </a>
+            </div>
+
+            <div class="mb-8">
+              <p class="text-sm font-black uppercase tracking-[0.24em] text-[var(--ca-gold)]">Recuperar contraseña</p>
+              <h2 class="mt-4 text-4xl font-black tracking-tight text-[var(--ca-navy)]">Restablecer</h2>
+              <p class="mt-4 text-base leading-7 text-slate-600">Te enviaremos un enlace a tu correo para crear una nueva contraseña.</p>
+            </div>
+
             @if (successMessage()) {
               <p-message class="mb-5 block" severity="success" [text]="successMessage()"></p-message>
             }
@@ -47,7 +118,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
 
               <button
                 pButton
-                class="h-12 w-full justify-center rounded-2xl border-0 bg-[var(--ca-teal)] text-base font-bold text-white"
+                class="h-12 w-full justify-center rounded-2xl border-0 bg-[var(--ca-teal)] text-base font-bold text-white hover:bg-[#0f9f91]"
                 type="submit"
                 icon="pi pi-send"
                 label="Enviar enlace"
@@ -56,13 +127,20 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
               ></button>
             </form>
 
-            <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm">
               <a routerLink="/login" class="font-semibold text-[var(--ca-teal)]">Volver al inicio de sesión</a>
-              <a routerLink="/registro" class="text-sm font-semibold text-slate-500">Crear cuenta</a>
+              <a routerLink="/registro" class="font-semibold text-slate-500">Crear cuenta</a>
+            </div>
+            <div class="mt-6 text-center">
+              <a routerLink="/" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors">
+                <i class="pi pi-arrow-left text-xs"></i>
+                Volver al inicio público
+              </a>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+      </div>
     </main>
   `,
 })

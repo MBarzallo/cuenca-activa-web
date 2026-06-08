@@ -17,7 +17,7 @@ import { AuthSessionService } from '../auth/auth-session.service';
       <aside class="sticky top-0 z-40 flex h-auto flex-col border-r border-white/10 bg-[var(--ca-navy)] text-white lg:h-screen">
         <div class="px-5 pb-4 pt-5">
           <a routerLink="/admin" class="flex items-center gap-3 rounded-2xl bg-white/5 p-3 ring-1 ring-white/10">
-            <span class="grid h-12 w-12 place-items-center rounded-2xl bg-[var(--ca-gold)] text-lg font-black text-[var(--ca-navy)] shadow-lg shadow-black/20">CA</span>
+            <img src="/logo/icon_only_white.png" class="h-12 w-12 object-contain" alt="CA Logo" />
             <span>
               <span class="block text-base font-semibold leading-5">CuencaActiva</span>
               <span class="text-xs font-medium text-slate-300">Gestión municipal</span>

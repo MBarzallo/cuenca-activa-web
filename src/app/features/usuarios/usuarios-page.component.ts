@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TableModule, TableLazyLoadEvent } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -8,7 +9,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { UserProfileService } from '../../core/services/user-profile.service';
 import { AdminUsuario } from '../../core/models/admin-usuario.model';
 
@@ -18,6 +20,7 @@ import { AdminUsuario } from '../../core/models/admin-usuario.model';
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     TableModule,
     InputTextModule,
     SelectModule,
@@ -25,18 +28,29 @@ import { AdminUsuario } from '../../core/models/admin-usuario.model';
     ToggleButtonModule,
     TagModule,
     ToastModule,
+    ButtonModule,
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   template: `
     <div class="space-y-6">
       <p-toast></p-toast>
-      <section class="rounded-[28px] bg-[var(--ca-navy)] p-6 text-white shadow-xl shadow-slate-900/10 sm:p-8">
-        <p class="text-sm font-bold uppercase tracking-[0.18em] text-[var(--ca-gold)]">Administración</p>
-        <h2 class="mt-3 text-3xl font-semibold sm:text-4xl">Gestión de Usuarios</h2>
-        <p class="mt-3 max-w-3xl leading-7 text-slate-300">
-          Busca ciudadanos registrados, actualiza sus roles y suspende o reactiva el acceso a la plataforma.
-        </p>
-      </section>
+      
+      <!-- Compact Admin Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-xs">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-[0.15em] text-[var(--ca-teal)] block">Administración</span>
+          <h2 class="text-2xl font-bold text-[var(--ca-navy)] mt-1">Gestión de Usuarios</h2>
+          <p class="text-xs text-slate-500 mt-1 max-w-2xl">
+            Busca ciudadanos registrados, actualiza sus roles y suspende o reactiva el acceso a la plataforma.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button (click)="fetchUsuarios()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer">
+            <i class="pi pi-refresh"></i>
+            <span>Actualizar</span>
+          </button>
+        </div>
+      </div>
 
       <div class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
         <!-- Filtros de búsqueda -->
@@ -54,8 +68,8 @@ import { AdminUsuario } from '../../core/models/admin-usuario.model';
             <p-select [options]="estadosOptions" [(ngModel)]="filterEstado" optionLabel="label" optionValue="value" placeholder="Cualquiera" styleClass="w-full" (onChange)="applyFilters()"></p-select>
           </div>
           <div class="flex gap-2">
-            <button (click)="applyFilters()" class="flex-1 rounded-xl bg-[var(--ca-navy)] hover:bg-[var(--ca-navy)]/90 px-4 py-2 text-sm font-semibold text-white transition">Filtrar</button>
-            <button (click)="clearFilters()" class="rounded-xl border border-slate-200 hover:bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 transition">Limpiar</button>
+            <button (click)="applyFilters()" class="flex-1 rounded-xl bg-[var(--ca-navy)] hover:bg-[var(--ca-navy)]/90 px-4 py-2 text-sm font-semibold text-white transition cursor-pointer">Filtrar</button>
+            <button (click)="clearFilters()" class="rounded-xl border border-slate-200 hover:bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 transition cursor-pointer">Limpiar</button>
           </div>
         </div>
 
@@ -82,7 +96,7 @@ import { AdminUsuario } from '../../core/models/admin-usuario.model';
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-user>
-            <tr>
+            <tr class="hover:bg-slate-50/45 cursor-pointer transition-colors" (click)="verDetalle(user)">
               <td>
                 <div class="flex items-center gap-3">
                   <img *ngIf="user.fotoPerfilUrl" [src]="user.fotoPerfilUrl" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
@@ -90,34 +104,34 @@ import { AdminUsuario } from '../../core/models/admin-usuario.model';
                     {{ user.aliasPublico.substring(0, 2).toUpperCase() }}
                   </div>
                   <div>
-                    <div class="font-semibold">{{ user.nombres }} {{ user.apellidos }}</div>
+                    <div class="font-semibold text-sm text-slate-800">{{ user.nombres }} {{ user.apellidos }}</div>
                     <div class="text-xs text-slate-500">&#64;{{ user.aliasPublico }}</div>
                   </div>
                 </div>
               </td>
-              <td class="text-sm">
+              <td class="text-sm text-slate-700">
                 <div>{{ user.email }}</div>
-                <div class="text-slate-500 text-xs">{{ user.telefono || 'Sin teléfono' }}</div>
+                <div class="text-slate-550 text-xs mt-0.5">{{ user.telefono || 'Sin teléfono' }}</div>
               </td>
-              <td>
-                <div class="flex items-center gap-3">
+              <td (click)="$event.stopPropagation()">
+                <div class="flex items-center gap-2">
                   <p-tag [value]="user.estadoCuenta" [severity]="user.estadoCuenta === 'ACTIVO' ? 'success' : 'danger'"></p-tag>
                   <p-toggleButton 
                     [ngModel]="user.estadoCuenta === 'ACTIVO'" 
-                    (onChange)="toggleEstado(user, $event.checked)" 
+                    (onChange)="toggleEstadoConfirmado(user, $event.checked)" 
                     onLabel="Bloquear" 
                     offLabel="Activar" 
                     onIcon="pi pi-lock" 
                     offIcon="pi pi-lock-open"
-                    styleClass="p-button-sm p-button-text p-button-secondary py-1"
+                    styleClass="p-button-sm p-button-text p-button-secondary py-1 text-xs"
                   ></p-toggleButton>
                 </div>
               </td>
-              <td>
+              <td (click)="$event.stopPropagation()">
                 <p-multiSelect 
                   [options]="rolesOptions" 
                   [ngModel]="user.roles" 
-                  (onChange)="updateRoles(user, $event.value)" 
+                  (onChange)="updateRolesConfirmado(user, $event.value)" 
                   optionLabel="label" 
                   optionValue="value" 
                   display="chip" 
@@ -136,6 +150,152 @@ import { AdminUsuario } from '../../core/models/admin-usuario.model';
         </p-table>
       </div>
     </div>
+
+    <!-- DETAIL DRAWER -->
+    <div *ngIf="showDetailDrawer() && selectedUser() as user">
+      <!-- Backdrop -->
+      <div class="fixed inset-0 z-[1000] bg-slate-900/40 backdrop-blur-xs transition-opacity" (click)="closeDetailDrawer()"></div>
+      
+      <!-- Drawer Container -->
+      <div class="fixed inset-y-0 right-0 z-[1001] w-full max-w-xl bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300">
+        <!-- Header -->
+        <div class="bg-[var(--ca-navy)] text-white p-6 flex items-center justify-between shrink-0">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--ca-gold)]">Detalle del Usuario</span>
+            <h3 class="text-xl font-bold mt-1">&#64;{{ user.aliasPublico }}</h3>
+          </div>
+          <button (click)="closeDetailDrawer()" class="text-white hover:text-slate-200 transition cursor-pointer p-1">
+            <i class="pi pi-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+          
+          <!-- Perfil resumido -->
+          <div class="flex items-center gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+            <img *ngIf="user.fotoPerfilUrl" [src]="user.fotoPerfilUrl" class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm" />
+            <div *ngIf="!user.fotoPerfilUrl" class="w-16 h-16 rounded-full bg-slate-200 text-slate-600 font-bold text-xl flex items-center justify-center border-2 border-white shadow-sm">
+              {{ user.aliasPublico.substring(0, 2).toUpperCase() }}
+            </div>
+            <div>
+              <h4 class="text-base font-bold text-slate-800">{{ user.nombres }} {{ user.apellidos }}</h4>
+              <span class="text-xs text-slate-500 font-medium">&#64;{{ user.aliasPublico }}</span>
+              <div class="flex items-center gap-2 mt-2">
+                <p-tag [value]="user.estadoCuenta" [severity]="user.estadoCuenta === 'ACTIVO' ? 'success' : 'danger'"></p-tag>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider" [ngClass]="getUserLevelClass(user.puntosTotales)">
+                  {{ getUserLevel(user.puntosTotales) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información general -->
+          <div class="space-y-2">
+            <h4 class="text-xs font-bold text-slate-450 uppercase tracking-wider">Información General</h4>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-3.5 text-xs text-slate-700">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <span class="text-[10px] font-bold text-slate-400 block uppercase">Identificador</span>
+                  <div class="flex items-center gap-1.5 mt-1">
+                    <span class="font-mono text-xs text-slate-650 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                      {{ user.idUsuario }}
+                    </span>
+                    <button (click)="copiarID($event, user.idUsuario)" class="text-slate-400 hover:text-[var(--ca-teal)] transition cursor-pointer p-1 bg-slate-50 rounded border border-slate-200" title="Copiar ID">
+                      <i class="pi pi-copy text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <span class="text-[10px] font-bold text-slate-400 block uppercase">Puntos Totales</span>
+                  <span class="font-bold text-sm text-[var(--ca-navy)] block mt-1">{{ user.puntosTotales }} pts</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <span class="text-[10px] font-bold text-slate-400 block uppercase">Correo Electrónico</span>
+                  <span class="font-semibold block mt-1 truncate" [title]="user.email">{{ user.email }}</span>
+                </div>
+                <div>
+                  <span class="text-[10px] font-bold text-slate-400 block uppercase">Teléfono</span>
+                  <span class="font-semibold block mt-1">{{ user.telefono || 'Sin registrar' }}</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <span class="text-[10px] font-bold text-slate-400 block uppercase">Fecha de Registro</span>
+                  <span class="font-semibold block mt-1">{{ user.fechaRegistro | date:'medium' }}</span>
+                </div>
+                <div>
+                  <span class="text-[10px] font-bold text-slate-400 block uppercase">Roles del Sistema</span>
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    <span *ngFor="let rol of user.roles" class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase border border-slate-200">
+                      {{ rol }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones de Navegación -->
+          <div class="space-y-2">
+            <h4 class="text-xs font-bold text-slate-450 uppercase tracking-wider">Enlaces Rápidos</h4>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-wrap gap-3">
+              <a [routerLink]="['/admin/incidencias']" [queryParams]="{ usuario: user.aliasPublico }" (click)="closeDetailDrawer()" class="flex-1 min-w-[200px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
+                <i class="pi pi-map-marker"></i>
+                <span>Ver Reportes de Ciudadano</span>
+              </a>
+              <a [routerLink]="['/admin/auditoria']" [queryParams]="{ usuario: user.aliasPublico }" (click)="closeDetailDrawer()" class="flex-1 min-w-[200px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
+                <i class="pi pi-shield"></i>
+                <span>Ver Bitácora de Auditoría</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Modificaciones rápidas -->
+          <div class="space-y-2">
+            <h4 class="text-xs font-bold text-slate-450 uppercase tracking-wider">Moderar cuenta</h4>
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
+              <!-- Activar / Bloquear -->
+              <div class="flex items-center justify-between text-xs">
+                <div>
+                  <span class="font-bold text-slate-750 block">Estado de la cuenta</span>
+                  <span class="text-slate-400 block mt-0.5">Suspender el acceso al sistema.</span>
+                </div>
+                <p-toggleButton 
+                  [ngModel]="user.estadoCuenta === 'ACTIVO'" 
+                  (onChange)="toggleEstadoConfirmado(user, $event.checked)" 
+                  onLabel="Cuenta Activa" 
+                  offLabel="Cuenta Suspendida" 
+                  onIcon="pi pi-check-circle" 
+                  offIcon="pi pi-ban"
+                  styleClass="p-button-sm py-1.5"
+                ></p-toggleButton>
+              </div>
+
+              <!-- Roles multiselect en drawer -->
+              <div class="pt-3 border-t border-slate-100 space-y-2">
+                <span class="font-bold text-slate-750 block text-xs">Asignar Roles Administrativos</span>
+                <p-multiSelect 
+                  [options]="rolesOptions" 
+                  [ngModel]="user.roles" 
+                  (onChange)="updateRolesConfirmado(user, $event.value)" 
+                  optionLabel="label" 
+                  optionValue="value" 
+                  display="chip" 
+                  placeholder="Seleccionar roles"
+                  styleClass="w-full"
+                ></p-multiSelect>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
   `,
 })
 export class UsuariosPageComponent implements OnInit {
@@ -148,6 +308,10 @@ export class UsuariosPageComponent implements OnInit {
   filterAlias = '';
   filterEmail = '';
   filterEstado: string | null = null;
+
+  // Drawer
+  readonly showDetailDrawer = signal<boolean>(false);
+  readonly selectedUser = signal<AdminUsuario | null>(null);
 
   estadosOptions = [
     { label: 'Cualquiera', value: null },
@@ -164,7 +328,8 @@ export class UsuariosPageComponent implements OnInit {
 
   constructor(
     private readonly userService: UserProfileService,
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    private readonly confirmationService: ConfirmationService
   ) {}
 
   ngOnInit() {
@@ -210,30 +375,106 @@ export class UsuariosPageComponent implements OnInit {
     });
   }
 
-  toggleEstado(usuario: AdminUsuario, actiVar: boolean) {
+  toggleEstadoConfirmado(usuario: AdminUsuario, actiVar: boolean) {
     const nuevoEstado = actiVar ? 'ACTIVO' : 'BLOQUEADO';
-    this.userService.changeUserStatus(usuario.idUsuario, nuevoEstado).subscribe({
-      next: () => {
-        usuario.estadoCuenta = nuevoEstado;
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Usuario ${usuario.aliasPublico} actualizado a ${nuevoEstado}` });
+    const labelAccion = actiVar ? 'activar' : 'bloquear';
+    
+    this.confirmationService.confirm({
+      header: 'Confirmar cambio de estado',
+      message: `¿Está seguro de que desea ${labelAccion} al usuario @${usuario.aliasPublico}?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, continuar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.userService.changeUserStatus(usuario.idUsuario, nuevoEstado).subscribe({
+          next: () => {
+            usuario.estadoCuenta = nuevoEstado;
+            // Si el usuario seleccionado en el drawer es el mismo, actualizamos el drawer
+            const current = this.selectedUser();
+            if (current && current.idUsuario === usuario.idUsuario) {
+              current.estadoCuenta = nuevoEstado;
+              this.selectedUser.set({ ...current });
+            }
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Usuario ${usuario.aliasPublico} actualizado a ${nuevoEstado}` });
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo actualizar el estado de cuenta' });
+            // Recargar para restaurar
+            this.fetchUsuarios();
+          }
+        });
       },
-      error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo actualizar el estado de cuenta' });
+      reject: () => {
+        // Recargar para restaurar estado en la UI
+        this.fetchUsuarios();
       }
     });
   }
 
-  updateRoles(usuario: AdminUsuario, roles: string[]) {
-    this.userService.changeUserRoles(usuario.idUsuario, roles).subscribe({
-      next: () => {
-        usuario.roles = roles;
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Roles de ${usuario.aliasPublico} actualizados` });
+  updateRolesConfirmado(usuario: AdminUsuario, roles: string[]) {
+    this.confirmationService.confirm({
+      header: 'Confirmar cambio de roles',
+      message: `¿Está seguro de que desea asignar los roles [${roles.join(', ')}] al usuario @${usuario.aliasPublico}?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, guardar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.userService.changeUserRoles(usuario.idUsuario, roles).subscribe({
+          next: () => {
+            usuario.roles = roles;
+            const current = this.selectedUser();
+            if (current && current.idUsuario === usuario.idUsuario) {
+              current.roles = roles;
+              this.selectedUser.set({ ...current });
+            }
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Roles de ${usuario.aliasPublico} actualizados` });
+          },
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudieron actualizar los roles' });
+            // Recargar para restaurar
+            this.fetchUsuarios();
+          }
+        });
       },
-      error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudieron actualizar los roles' });
-        // Recargar para restaurar los valores en UI
+      reject: () => {
+        // Recargar para restaurar roles en la UI
         this.fetchUsuarios();
       }
     });
+  }
+
+  // Helpers de visualización
+  getUserLevel(puntos: number): string {
+    if (puntos <= 100) return 'Vecino Novato';
+    if (puntos <= 500) return 'Observador Urbano';
+    return 'Guardián de Cuenca';
+  }
+
+  getUserLevelClass(puntos: number): string {
+    if (puntos <= 100) return 'bg-slate-100 text-slate-700 border border-slate-200';
+    if (puntos <= 500) return 'bg-amber-50 text-amber-700 border border-amber-200';
+    return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+  }
+
+  copiarID(event: Event, id: string) {
+    event.stopPropagation();
+    navigator.clipboard.writeText(id).then(() => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Copiado',
+        detail: 'ID de usuario copiado al portapapeles',
+        life: 2000
+      });
+    });
+  }
+
+  verDetalle(usuario: AdminUsuario) {
+    this.selectedUser.set(usuario);
+    this.showDetailDrawer.set(true);
+  }
+
+  closeDetailDrawer() {
+    this.showDetailDrawer.set(false);
+    this.selectedUser.set(null);
   }
 }

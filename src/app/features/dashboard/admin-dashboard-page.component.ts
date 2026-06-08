@@ -10,6 +10,7 @@ import { Incidencia } from '../../core/models/incidencia.model';
 import { IncidenciasService } from '../../core/services/incidencias.service';
 import { ReportesModeracionService } from '../../core/services/reportes-moderacion.service';
 import { AdminReporteContenido } from '../../core/models/admin-reporte-contenido.model';
+import { UserProfileService } from '../../core/services/user-profile.service';
 
 interface DashboardSummary {
   totalIncidencias: number;
@@ -25,165 +26,168 @@ interface DashboardSummary {
   imports: [CommonModule, RouterLink, ButtonModule, CardModule, TableModule, TagModule],
   template: `
     <div class="space-y-6">
-      <section class="rounded-[28px] bg-[var(--ca-navy)] p-6 text-white shadow-xl shadow-slate-900/10 sm:p-8">
-        <div class="grid gap-6 xl:grid-cols-[1fr_auto] xl:items-end">
-          <div>
-            <p class="text-sm font-bold uppercase tracking-[0.18em] text-[var(--ca-gold)]">Resumen operativo</p>
-            <h2 class="mt-3 text-3xl font-semibold sm:text-4xl">Dashboard administrativo</h2>
-            <p class="mt-3 max-w-3xl leading-7 text-slate-300">
-              Monitorea incidencias ciudadanas, actividad reciente y estados de atención en un solo panel.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <a routerLink="/admin/incidencias" pButton icon="pi pi-map-marker" label="Gestionar incidencias"></a>
-            <a routerLink="/admin/reportes-contenido" pButton severity="secondary" outlined icon="pi pi-flag" label="Reportes"></a>
-          </div>
+      <!-- PAGE HEADER: Light, dense and operational -->
+      <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Resumen operativo</span>
+          <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 mt-0.5">Dashboard administrativo</h1>
+          <p class="mt-1 text-sm text-slate-500">Supervisión en tiempo real de incidencias ciudadanas, solicitudes y alertas de moderación.</p>
         </div>
-      </section>
+        <div class="flex flex-wrap gap-2 shrink-0 sm:self-end">
+          <a routerLink="/admin/incidencias" pButton icon="pi pi-map-marker" label="Gestionar incidencias" class="p-button-sm"></a>
+          <a routerLink="/admin/reportes-contenido" pButton severity="secondary" outlined icon="pi pi-flag" label="Moderación" class="p-button-sm hover:bg-slate-50"></a>
+        </div>
+      </header>
 
       @if (summary(); as data) {
-        <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <p-card styleClass="ca-metric-card">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-slate-500">Incidencias recientes</p>
-                <strong class="mt-1 block text-3xl">{{ data.totalIncidencias }}</strong>
-                <span class="mt-2 block text-xs text-slate-500">Últimos registros disponibles</span>
-              </div>
-              <span class="ca-metric-icon bg-[var(--ca-navy)] text-white"><i class="pi pi-database"></i></span>
+        <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <!-- Metric 1 -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Incidencias recientes</span>
+              <strong class="mt-1 block text-3xl font-extrabold text-slate-800">{{ data.totalIncidencias }}</strong>
+              <span class="mt-1 block text-[11px] text-slate-400">Últimos registros</span>
             </div>
-          </p-card>
-          <p-card styleClass="ca-metric-card">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-slate-500">Pendientes</p>
-                <strong class="mt-1 block text-3xl text-[var(--ca-gold)]">{{ data.pendientes }}</strong>
-                <span class="mt-2 block text-xs text-slate-500">Requieren seguimiento</span>
-              </div>
-              <span class="ca-metric-icon bg-[var(--ca-gold)] text-[var(--ca-navy)]"><i class="pi pi-clock"></i></span>
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-slate-100 text-slate-500"><i class="pi pi-database text-lg"></i></span>
+          </div>
+
+          <!-- Metric 2 -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pendientes</span>
+              <strong class="mt-1 block text-3xl font-extrabold text-[var(--ca-gold)]">{{ data.pendientes }}</strong>
+              <span class="mt-1 block text-[11px] text-slate-400">Requieren atención</span>
             </div>
-          </p-card>
-          <p-card styleClass="ca-metric-card">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-slate-500">Cerradas</p>
-                <strong class="mt-1 block text-3xl text-[var(--ca-teal)]">{{ data.cerradas }}</strong>
-                <span class="mt-2 block text-xs text-slate-500">Con fecha de cierre</span>
-              </div>
-              <span class="ca-metric-icon bg-[var(--ca-teal)] text-white"><i class="pi pi-check-circle"></i></span>
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-[var(--ca-gold)]/10 text-[var(--ca-gold)]"><i class="pi pi-clock text-lg"></i></span>
+          </div>
+
+          <!-- Metric 3 -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Cerradas</span>
+              <strong class="mt-1 block text-3xl font-extrabold text-[var(--ca-teal)]">{{ data.cerradas }}</strong>
+              <span class="mt-1 block text-[11px] text-slate-400">Atendidas y cerradas</span>
             </div>
-          </p-card>
-          <p-card styleClass="ca-metric-card">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-slate-500">Reportes pendientes</p>
-                <strong class="mt-1 block text-3xl text-red-500">{{ reportesPendientesCount() }}</strong>
-                <span class="mt-2 block text-xs text-slate-500">Esperando moderación</span>
-              </div>
-              <span class="ca-metric-icon bg-red-100 text-red-600"><i class="pi pi-flag"></i></span>
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-[var(--ca-teal)]/10 text-[var(--ca-teal)]"><i class="pi pi-check-circle text-lg"></i></span>
+          </div>
+
+          <!-- Metric 4 -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Moderaciones</span>
+              <strong class="mt-1 block text-3xl font-extrabold text-red-500">{{ reportesPendientesCount() }}</strong>
+              <span class="mt-1 block text-[11px] text-slate-400">Pendientes de revisión</span>
             </div>
-          </p-card>
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-red-50 text-red-500"><i class="pi pi-flag text-lg"></i></span>
+          </div>
+
+          <!-- Metric 5 -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Usuarios</span>
+              <strong class="mt-1 block text-3xl font-extrabold text-indigo-650">{{ totalUsuarios() }}</strong>
+              <span class="mt-1 block text-[11px] text-slate-400">Registrados en la app</span>
+            </div>
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-indigo-50 text-indigo-600"><i class="pi pi-users text-lg"></i></span>
+          </div>
         </section>
 
-        <section class="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
-          <p-card styleClass="border-0 shadow-sm">
-            <ng-template pTemplate="header">
-              <div class="border-b border-slate-100 px-5 py-4">
-                <h3 class="text-lg font-semibold">Distribución por estado</h3>
-                <p class="mt-1 text-sm text-slate-500">Conteo de incidencias cargadas.</p>
-              </div>
-            </ng-template>
-            <div class="px-2 pb-2">
+        <section class="grid gap-6 xl:grid-cols-[360px_1fr]">
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="border-b border-slate-100 pb-3 mb-4">
+              <h3 class="text-sm font-bold text-slate-800">Distribución por estado</h3>
+              <p class="text-[11px] text-slate-400">Conteo por estado de la incidencia.</p>
+            </div>
+            <div class="flex justify-center items-center pb-2">
               <canvas #statesChart height="280"></canvas>
             </div>
-          </p-card>
+          </div>
 
-          <p-card styleClass="overflow-hidden border-0 shadow-sm">
-            <ng-template pTemplate="header">
-              <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-                <div>
-                  <h3 class="text-lg font-semibold">Incidencias recientes</h3>
-                  <p class="mt-1 text-sm text-slate-500">Últimas incidencias públicas disponibles.</p>
-                </div>
-                <a routerLink="/admin/incidencias" pButton size="small" severity="secondary" outlined icon="pi pi-arrow-right" label="Ver todas"></a>
+          <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-800">Incidencias recientes</h3>
+                <p class="text-[11px] text-slate-400">Últimas incidencias públicas reportadas por ciudadanos.</p>
               </div>
-            </ng-template>
-            <p-table [value]="data.recientes" responsiveLayout="stack" styleClass="p-datatable-sm ca-clean-table">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Incidencia</th>
-                  <th>Estado</th>
-                  <th>Prioridad</th>
-                  <th>Actividad</th>
-                  <th></th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-incidencia>
-                <tr>
-                  <td>
-                    <div class="font-semibold">{{ incidencia.titulo }}</div>
-                    <div class="mt-1 text-sm text-slate-500">{{ incidencia.nombreCategoria }}</div>
-                  </td>
-                  <td><p-tag [value]="incidencia.nombreEstado" [severity]="tagSeverity(incidencia.codigoEstado)"></p-tag></td>
-                  <td>{{ incidencia.prioridadCalculada }}</td>
-                  <td class="text-sm text-slate-600">{{ incidencia.cantidadComentarios }} comentarios</td>
-                  <td class="text-right">
-                    <a routerLink="/admin/incidencias" pButton size="small" severity="secondary" text icon="pi pi-pencil"></a>
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
-          </p-card>
+              <a routerLink="/admin/incidencias" pButton size="small" severity="secondary" outlined icon="pi pi-arrow-right" label="Ver todas" class="p-button-xs hover:bg-slate-50 transition-colors"></a>
+            </div>
+            
+            <div class="p-3">
+              <p-table [value]="data.recientes" responsiveLayout="stack" styleClass="p-datatable-sm ca-clean-table border-0">
+                <ng-template pTemplate="header">
+                  <tr class="hidden lg:table-row">
+                    <th class="font-bold text-xs text-slate-500">Incidencia</th>
+                    <th class="font-bold text-xs text-slate-500">Estado</th>
+                    <th class="font-bold text-xs text-slate-500">Prioridad</th>
+                    <th class="font-bold text-xs text-slate-500">Actividad</th>
+                    <th class="w-[50px]"></th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-incidencia>
+                  <tr class="hover:bg-slate-50/50 border-b border-slate-100/60 transition-colors">
+                    <td class="py-3">
+                      <div class="font-semibold text-sm text-slate-800">{{ incidencia.titulo }}</div>
+                      <div class="text-xs text-slate-400 mt-0.5">{{ incidencia.nombreCategoria }}</div>
+                    </td>
+                    <td class="py-3"><p-tag [value]="incidencia.nombreEstado" [severity]="tagSeverity(incidencia.codigoEstado)"></p-tag></td>
+                    <td class="py-3 text-xs font-semibold text-slate-600">{{ incidencia.prioridadCalculada || 'Baja' }}</td>
+                    <td class="py-3 text-xs text-slate-500">{{ incidencia.cantidadComentarios }} com. / {{ incidencia.cantidadConfirmaciones }} val.</td>
+                    <td class="py-3 text-right">
+                      <a routerLink="/admin/incidencias" pButton size="small" severity="secondary" text icon="pi pi-pencil" class="hover:bg-slate-100 rounded-lg"></a>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
         </section>
 
         <section class="grid gap-6 xl:grid-cols-3">
-          <p-card styleClass="border-0 shadow-sm xl:col-span-2">
-            <ng-template pTemplate="header">
-              <div class="border-b border-slate-100 px-5 py-4">
-                <h3 class="text-lg font-semibold">Resumen por sector</h3>
-                <p class="mt-1 text-sm text-slate-500">Sectores detectados en el lote actual.</p>
-              </div>
-            </ng-template>
-            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-2">
+            <div class="border-b border-slate-100 pb-3 mb-4">
+              <h3 class="text-sm font-bold text-slate-800">Resumen por sector</h3>
+              <p class="text-[11px] text-slate-400">Sectores con mayor reporte de incidencias.</p>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               @for (sector of topSectores(data.recientes); track sector.nombre) {
-                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p class="truncate text-sm font-semibold">{{ sector.nombre }}</p>
-                  <p class="mt-2 text-2xl font-bold text-[var(--ca-navy)]">{{ sector.total }}</p>
+                <div class="rounded-xl border border-slate-150 bg-slate-50 p-4">
+                  <p class="truncate text-xs font-bold text-slate-500 uppercase tracking-wider">{{ sector.nombre }}</p>
+                  <p class="mt-2 text-2xl font-black text-slate-800">{{ sector.total }}</p>
                 </div>
               } @empty {
-                <p class="text-sm text-slate-500">No hay sectores disponibles.</p>
+                <p class="text-xs text-slate-400 font-medium py-4">No hay sectores registrados.</p>
               }
             </div>
-          </p-card>
+          </div>
 
-          <p-card styleClass="border-0 shadow-sm">
-            <ng-template pTemplate="header">
-              <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-                <div>
-                  <h3 class="text-lg font-semibold">Reportes de contenido</h3>
-                  <p class="mt-1 text-sm text-slate-500">Bandeja de moderación rápida.</p>
-                </div>
-                <a routerLink="/admin/reportes-contenido" pButton size="small" severity="secondary" outlined icon="pi pi-arrow-right" label="Ver todos"></a>
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-800">Reportes de moderación</h3>
+                <p class="text-[11px] text-slate-400">Alertas de contenido inapropiado.</p>
               </div>
-            </ng-template>
+              <a routerLink="/admin/reportes-contenido" pButton size="small" severity="secondary" outlined icon="pi pi-arrow-right" label="Ver todos" class="p-button-xs hover:bg-slate-50 transition-colors"></a>
+            </div>
             
             <div *ngIf="reportesPendientes().length > 0; else noReportes" class="space-y-3">
-              <div *ngFor="let reporte of reportesPendientes()" class="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-2xl">
-                <div>
-                  <span class="text-xs font-bold text-slate-500 uppercase">{{ obtenerTipoContenido(reporte) }}</span>
-                  <div class="text-xs text-slate-700 font-semibold mt-1 truncate max-w-[200px]" [title]="reporte.motivo">{{ reporte.motivo }}</div>
+              <div *ngFor="let reporte of reportesPendientes()" class="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-100 rounded-xl">
+                <div class="min-w-0">
+                  <span class="inline-flex items-center rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-600 uppercase tracking-wider">
+                    {{ obtenerTipoContenido(reporte) }}
+                  </span>
+                  <div class="text-xs text-slate-700 font-bold mt-1.5 truncate max-w-[200px]" [title]="reporte.motivo">{{ reporte.motivo }}</div>
                 </div>
-                <a routerLink="/admin/reportes-contenido" pButton size="small" severity="danger" text icon="pi pi-flag"></a>
+                <a routerLink="/admin/reportes-contenido" pButton size="small" severity="danger" text icon="pi pi-flag" class="hover:bg-red-50/50 rounded-lg"></a>
               </div>
             </div>
             <ng-template #noReportes>
-              <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-center">
-                <i class="pi pi-check-circle text-[var(--ca-teal)] text-3xl mb-2 block"></i>
-                <p class="font-semibold text-sm">Plataforma limpia</p>
-                <p class="mt-1 text-xs text-slate-500">No hay reportes de contenido pendientes.</p>
+              <div class="rounded-xl border border-dashed border-slate-350 bg-slate-50 p-6 text-center">
+                <i class="pi pi-shield text-[var(--ca-teal)] text-2xl mb-2 block animate-pulse"></i>
+                <p class="font-bold text-xs text-slate-700">Plataforma limpia</p>
+                <p class="mt-0.5 text-[11px] text-slate-400">No hay contenido pendiente de moderación.</p>
               </div>
             </ng-template>
-          </p-card>
+          </div>
         </section>
       }
     </div>
@@ -194,14 +198,19 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewInit, OnDes
   readonly summary = signal<DashboardSummary | null>(null);
   readonly reportesPendientesCount = signal<number>(0);
   readonly reportesPendientes = signal<AdminReporteContenido[]>([]);
+  readonly totalUsuarios = signal<number>(0);
   private chart: Chart | null = null;
 
   constructor(
     private readonly incidenciasService: IncidenciasService,
-    private readonly reportesService: ReportesModeracionService
+    private readonly reportesService: ReportesModeracionService,
+    private readonly userService: UserProfileService
   ) {}
 
   ngOnInit() {
+    this.userService.listUsersAdmin({ limit: 1 }).subscribe((resp) => {
+      this.totalUsuarios.set(resp.total);
+    });
     this.incidenciasService.getDashboardSummary().subscribe((summary) => {
       this.summary.set(summary);
       this.renderChart();

@@ -13,28 +13,6 @@ export const routes: Routes = [
         loadComponent: () => import('./features/public/home/home-page.component').then((m) => m.HomePageComponent),
       },
       {
-        path: 'login',
-        loadComponent: () => import('./features/auth/login/login-page.component').then((m) => m.LoginPageComponent),
-      },
-      {
-        path: 'registro',
-        loadComponent: () => import('./features/auth/register/register-page.component').then((m) => m.RegisterPageComponent),
-      },
-      {
-        path: 'completar-perfil',
-        loadComponent: () =>
-          import('./features/auth/complete-profile/complete-profile-page.component').then(
-            (m) => m.CompleteProfilePageComponent,
-          ),
-      },
-      {
-        path: 'recuperar-contrasena',
-        loadComponent: () =>
-          import('./features/auth/forgot-password/forgot-password-page.component').then(
-            (m) => m.ForgotPasswordPageComponent,
-          ),
-      },
-      {
         path: 'mapa',
         loadComponent: () => import('./features/public/mapa/public-map-page.component').then((m) => m.PublicMapPageComponent),
       },
@@ -77,6 +55,34 @@ export const routes: Routes = [
         path: 'mis-reportes',
         canMatch: [authGuard],
         loadComponent: () => import('./features/citizen/my-reports/my-reports-page.component').then((m) => m.MyReportsPageComponent),
+      },
+    ],
+  },
+  {
+    path: '',
+    loadComponent: () => import('./core/layout/auth-layout.component').then((m) => m.AuthLayoutComponent),
+    children: [
+      {
+        path: 'login',
+        loadComponent: () => import('./features/auth/login/login-page.component').then((m) => m.LoginPageComponent),
+      },
+      {
+        path: 'registro',
+        loadComponent: () => import('./features/auth/register/register-page.component').then((m) => m.RegisterPageComponent),
+      },
+      {
+        path: 'completar-perfil',
+        loadComponent: () =>
+          import('./features/auth/complete-profile/complete-profile-page.component').then(
+            (m) => m.CompleteProfilePageComponent,
+          ),
+      },
+      {
+        path: 'recuperar-contrasena',
+        loadComponent: () =>
+          import('./features/auth/forgot-password/forgot-password-page.component').then(
+            (m) => m.ForgotPasswordPageComponent,
+          ),
       },
     ],
   },

@@ -1014,7 +1014,8 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
       return true;
     }
     this.messages.add({ severity: 'info', summary: 'Inicia sesión para participar' });
-    void this.router.navigateByUrl('/login');
+    const currentUrl = this.router.url;
+    void this.router.navigate(['/login'], { queryParams: { returnUrl: currentUrl } });
     return false;
   }
 

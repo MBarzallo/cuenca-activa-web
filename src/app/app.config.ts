@@ -5,6 +5,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
+import { loggingInterceptor } from './core/interceptors/logging.interceptor';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { AuthSessionService } from './core/auth/auth-session.service';
 
@@ -16,7 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
 
     provideRouter(routes),
-    provideHttpClient(withFetch(), withInterceptors([authTokenInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([authTokenInterceptor, loggingInterceptor])),
     MessageService,
     ConfirmationService,
 

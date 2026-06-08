@@ -19,194 +19,203 @@ import { UserProfileService } from '../../../core/services/user-profile.service'
   imports: [ReactiveFormsModule, RouterLink, DatePipe, ButtonModule, CardModule, InputTextModule, TagModule],
   template: `
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <section class="mb-6 overflow-hidden rounded-[30px] bg-[var(--ca-navy)] text-white shadow-xl shadow-slate-900/10">
-        <div class="grid gap-5 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div>
-            <p class="text-sm font-bold uppercase tracking-[0.18em] text-[var(--ca-gold)]">Zona ciudadana</p>
-            <h1 class="mt-3 text-3xl font-semibold">Mi perfil</h1>
-            <p class="mt-2 max-w-3xl leading-7 text-slate-300">
-              Actualiza tus datos públicos y revisa el avance que has ganado participando en CuencaActiva.
-            </p>
-          </div>
-          <a routerLink="/mis-reportes" pButton severity="secondary" outlined icon="pi pi-file-edit" label="Mis reportes"></a>
+      <!-- PAGE HEADER: Light and personal -->
+      <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[var(--ca-teal)]">Zona ciudadana</span>
+          <h1 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Ajustes de mi cuenta</h1>
+          <p class="mt-1 text-sm text-slate-500">Administra tus datos personales, tu alias público e información de contacto.</p>
         </div>
-      </section>
+        <div class="flex flex-wrap gap-2.5 shrink-0 sm:self-end">
+          <a routerLink="/mis-reportes" pButton severity="secondary" outlined icon="pi pi-file-edit" label="Mis reportes" class="hover:bg-slate-50"></a>
+        </div>
+      </header>
 
       @if (user(); as item) {
-        <section class="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
+        <section class="grid gap-8 xl:grid-cols-[340px_minmax(0,1fr)]">
           <aside class="space-y-6">
-            <p-card styleClass="border-0 shadow-sm">
+            <!-- AVATAR & BASIC DETAILS -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <div class="flex flex-col items-center text-center">
                 <div class="relative">
-                  <span class="grid h-32 w-32 place-items-center overflow-hidden rounded-[2rem] bg-[var(--ca-navy)] text-4xl font-black text-[var(--ca-gold)] ring-4 ring-slate-100">
+                  <span class="grid h-32 w-32 place-items-center overflow-hidden rounded-[2rem] bg-slate-900 text-4xl font-black text-[var(--ca-gold)] ring-4 ring-slate-100">
                     @if (avatarUrl()) {
                       <img [src]="avatarUrl()!" alt="Foto de perfil" class="h-full w-full object-cover" />
                     } @else {
                       {{ initials() }}
                     }
                   </span>
-                  <label class="absolute -bottom-2 -right-2 grid h-11 w-11 cursor-pointer place-items-center rounded-2xl bg-[var(--ca-gold)] text-[var(--ca-navy)] shadow-lg transition hover:brightness-95">
-                    <i class="pi pi-camera"></i>
+                  <label class="absolute -bottom-2 -right-2 grid h-10 w-10 cursor-pointer place-items-center rounded-xl bg-[var(--ca-teal)] text-white shadow-md transition hover:opacity-90">
+                    <i class="pi pi-camera text-sm"></i>
                     <input class="hidden" type="file" accept="image/jpeg,image/png,image/webp" (change)="selectAvatar($event)" />
                   </label>
                 </div>
 
-                <h2 class="mt-5 text-xl font-semibold">{{ fullName() }}</h2>
+                <h2 class="mt-5 text-xl font-bold text-slate-800">{{ fullName() }}</h2>
                 <p class="mt-1 text-sm text-slate-500">{{ item.email }}</p>
-                <p class="mt-2 rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
+                <p class="mt-2.5 rounded-full bg-slate-100 px-3.5 py-1 text-xs font-bold text-slate-600">
                   {{ item.aliasPublico ? '@' + item.aliasPublico : 'Alias pendiente' }}
                 </p>
 
-                <div class="mt-4 flex flex-wrap justify-center gap-2">
+                <div class="mt-4 flex flex-wrap justify-center gap-1.5">
                   @for (role of item.roles; track role) {
-                    <p-tag [value]="role" severity="info"></p-tag>
+                    <p-tag [value]="role" severity="secondary"></p-tag>
                   }
                 </div>
 
                 @if (selectedAvatar()) {
-                  <div class="mt-5 w-full rounded-2xl border border-amber-200 bg-amber-50 p-3 text-left text-sm text-amber-900">
-                    <p class="font-semibold">Foto lista para guardar</p>
-                    <p class="mt-1 truncate">{{ selectedAvatar()?.name }}</p>
+                  <div class="mt-4 w-full rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-left text-xs text-amber-900">
+                    <p class="font-bold flex items-center gap-1.5"><i class="pi pi-exclamation-circle"></i> Imagen seleccionada</p>
+                    <p class="mt-1 truncate text-slate-600">{{ selectedAvatar()?.name }}</p>
                   </div>
                 }
               </div>
-            </p-card>
+            </div>
 
-            <p-card styleClass="border-0 shadow-sm">
+            <!-- LEVEL & POINTS -->
+            <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-6">
               <div class="flex items-start justify-between gap-4">
                 <div>
-                  <p class="text-sm text-slate-500">Puntos acumulados</p>
-                  <strong class="mt-1 block text-4xl text-[var(--ca-teal)]">{{ item.puntosTotales }}</strong>
+                  <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Puntos acumulados</span>
+                  <strong class="mt-1.5 block text-4xl font-extrabold text-slate-800">{{ item.puntosTotales }}</strong>
                 </div>
-                <span class="grid h-12 w-12 place-items-center rounded-2xl bg-teal-50 text-[var(--ca-teal)]">
-                  <i class="pi pi-star-fill"></i>
+                <span class="grid h-10 w-10 place-items-center rounded-xl bg-[var(--ca-gold)]/10 text-[var(--ca-gold)]">
+                  <i class="pi pi-star-fill text-lg"></i>
                 </span>
               </div>
-              <div class="mt-5">
-                <div class="flex items-center justify-between gap-3 text-sm">
-                  <span class="font-semibold">{{ item.nombreNivelActual || item.codigoNivelActual || 'Nivel ciudadano' }}</span>
-                  <span class="text-slate-500">{{ pointsToNextLevel() }}</span>
+              <div class="mt-6">
+                <div class="flex items-center justify-between gap-3 text-xs">
+                  <span class="font-bold text-slate-700">{{ item.nombreNivelActual || item.codigoNivelActual || 'Nivel ciudadano' }}</span>
+                  <span class="font-semibold text-[var(--ca-teal)]">{{ pointsToNextLevel() }}</span>
                 </div>
-                <div class="mt-3 h-3 overflow-hidden rounded-full bg-slate-100">
-                  <div class="h-full rounded-full bg-[var(--ca-teal)] transition-all" [style.width.%]="levelProgress()"></div>
+                <div class="mt-2.5 h-2 overflow-hidden rounded-full bg-slate-205 bg-slate-200">
+                  <div class="h-full rounded-full bg-[var(--ca-teal)] transition-all duration-300" [style.width.%]="levelProgress()"></div>
                 </div>
-                <div class="mt-2 flex justify-between text-xs text-slate-500">
+                <div class="mt-2 flex justify-between text-[11px] font-bold text-slate-400">
                   <span>{{ item.puntosMinimosNivel ?? 0 }} pts</span>
                   <span>{{ item.puntosMaximosNivel ?? item.puntosTotales }} pts</span>
                 </div>
               </div>
-            </p-card>
+            </div>
           </aside>
 
           <section class="space-y-6">
-            <p-card styleClass="border-0 shadow-sm">
-              <ng-template pTemplate="header">
-                <div class="border-b border-slate-100 px-5 py-4">
-                  <h2 class="text-xl font-semibold">Datos de perfil</h2>
-                  <p class="mt-1 text-sm text-slate-500">Estos datos ayudan a identificar tu participación ciudadana.</p>
-                </div>
-              </ng-template>
+            <!-- PROFILE DATA FORM -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="border-b border-slate-100 pb-4 mb-6">
+                <h2 class="text-lg font-bold text-slate-800">Datos del ciudadano</h2>
+                <p class="mt-1 text-sm text-slate-500">Gestiona la información con la que interactúas en la plataforma.</p>
+              </div>
 
-              <form [formGroup]="form" class="grid gap-5" (ngSubmit)="saveProfile()">
-                <div class="grid gap-5 md:grid-cols-2">
-                  <label class="block">
-                    <span class="mb-2 block text-sm font-semibold text-slate-700">Nombres</span>
-                    <input pInputText class="w-full" formControlName="nombres" maxlength="100" />
-                    @if (controlInvalid('nombres')) {
-                      <small class="mt-2 block text-red-600">Ingresa tus nombres.</small>
-                    }
-                  </label>
+              <form [formGroup]="form" class="space-y-6" (ngSubmit)="saveProfile()">
+                <!-- Información pública -->
+                <div class="space-y-4">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Información pública</h3>
+                  <div class="grid gap-5 md:grid-cols-2">
+                    <label class="block">
+                      <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Nombres</span>
+                      <input pInputText class="w-full" formControlName="nombres" maxlength="100" />
+                      @if (controlInvalid('nombres')) {
+                        <small class="mt-1.5 block text-xs font-medium text-red-600">Ingresa tus nombres.</small>
+                      }
+                    </label>
 
-                  <label class="block">
-                    <span class="mb-2 block text-sm font-semibold text-slate-700">Apellidos</span>
-                    <input pInputText class="w-full" formControlName="apellidos" maxlength="100" />
-                    @if (controlInvalid('apellidos')) {
-                      <small class="mt-2 block text-red-600">Ingresa tus apellidos.</small>
-                    }
-                  </label>
-                </div>
+                    <label class="block">
+                      <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Apellidos</span>
+                      <input pInputText class="w-full" formControlName="apellidos" maxlength="100" />
+                      @if (controlInvalid('apellidos')) {
+                        <small class="mt-1.5 block text-xs font-medium text-red-600">Ingresa tus apellidos.</small>
+                      }
+                    </label>
+                  </div>
 
-                <div class="grid gap-5 md:grid-cols-2">
-                  <label class="block">
-                    <span class="mb-2 block text-sm font-semibold text-slate-700">Alias público</span>
-                    <span class="p-input-icon-left w-full">
-                      <i class="pi pi-at"></i>
-                      <input pInputText class="w-full" formControlName="aliasPublico" maxlength="50" />
-                    </span>
-                    @if (controlInvalid('aliasPublico')) {
-                      <small class="mt-2 block text-red-600">Usa 3 a 50 caracteres: letras, números, puntos, guiones o guion bajo.</small>
-                    } @else {
-                      <small class="mt-2 block text-slate-500">Así aparecerás en reportes, comentarios y validaciones.</small>
-                    }
-                  </label>
-
-                  <label class="block">
-                    <span class="mb-2 block text-sm font-semibold text-slate-700">Teléfono</span>
-                    <input pInputText class="w-full" formControlName="telefono" maxlength="20" placeholder="Opcional" />
-                    @if (controlInvalid('telefono')) {
-                      <small class="mt-2 block text-red-600">El teléfono no debe superar 20 caracteres.</small>
-                    }
-                  </label>
+                  <div class="grid gap-5 md:grid-cols-2">
+                    <label class="block">
+                      <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Alias público (@)</span>
+                      <span class="p-input-icon-left w-full block">
+                        <i class="pi pi-at text-slate-400"></i>
+                        <input pInputText class="w-full" formControlName="aliasPublico" maxlength="50" />
+                      </span>
+                      @if (controlInvalid('aliasPublico')) {
+                        <small class="mt-1.5 block text-xs font-medium text-red-600">Usa de 3 a 50 caracteres (letras, números, puntos, guiones).</small>
+                      } @else {
+                        <small class="mt-1.5 block text-[11px] text-slate-400">Así aparecerás públicamente en tus reportes y comentarios.</small>
+                      }
+                    </label>
+                  </div>
                 </div>
 
+                <!-- Datos de contacto (privados) -->
+                <div class="space-y-4 pt-4 border-t border-slate-100">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Datos de contacto</h3>
+                  <div class="grid gap-5 md:grid-cols-2">
+                    <label class="block">
+                      <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Teléfono móvil / contacto</span>
+                      <input pInputText class="w-full" formControlName="telefono" maxlength="20" placeholder="Ej. +593 99 999 9999" />
+                      @if (controlInvalid('telefono')) {
+                        <small class="mt-1.5 block text-xs font-medium text-red-600">El teléfono no debe superar 20 caracteres.</small>
+                      }
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Botones de acción -->
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
                   <button pButton type="button" severity="secondary" outlined icon="pi pi-refresh" label="Restaurar" (click)="resetForm()" [disabled]="saving()"></button>
                   <button pButton type="submit" icon="pi pi-save" label="Guardar cambios" [loading]="saving()"></button>
                 </div>
               </form>
-            </p-card>
+            </div>
 
-            <p-card styleClass="border-0 shadow-sm">
-              <ng-template pTemplate="header">
-                <div class="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h2 class="text-xl font-semibold">Movimientos de puntos</h2>
-                    <p class="mt-1 text-sm text-slate-500">Actividad reciente de tu participación.</p>
-                  </div>
-                  <button pButton size="small" severity="secondary" outlined icon="pi pi-refresh" label="Actualizar" (click)="loadMovements()" [loading]="loadingMovements()"></button>
+            <!-- POINTS MOVEMENTS -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="flex flex-col gap-3 border-b border-slate-100 pb-4 mb-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 class="text-lg font-bold text-slate-800">Movimientos de puntos</h2>
+                  <p class="mt-1 text-sm text-slate-500">Historial reciente de tu actividad ciudadana.</p>
                 </div>
-              </ng-template>
+                <button pButton size="small" severity="secondary" outlined icon="pi pi-refresh" label="Actualizar" (click)="loadMovements()" [loading]="loadingMovements()" class="hover:bg-slate-50"></button>
+              </div>
 
               @if (loadingMovements()) {
                 <div class="grid gap-3">
-                  <div class="h-16 rounded-2xl bg-slate-100"></div>
-                  <div class="h-16 rounded-2xl bg-slate-100"></div>
-                  <div class="h-16 rounded-2xl bg-slate-100"></div>
+                  <div class="h-16 rounded-xl bg-slate-50 animate-pulse border border-slate-100"></div>
+                  <div class="h-16 rounded-xl bg-slate-50 animate-pulse border border-slate-100"></div>
                 </div>
               } @else if (movementsError()) {
-                <div class="rounded-2xl bg-slate-50 p-6 text-center">
-                  <i class="pi pi-cloud-off text-2xl text-slate-400"></i>
-                  <p class="mt-3 font-semibold">No pudimos cargar tus movimientos</p>
-                  <p class="mt-1 text-sm text-slate-500">Intenta nuevamente en unos segundos.</p>
+                <div class="rounded-xl bg-red-50/50 border border-red-100 p-6 text-center">
+                  <i class="pi pi-cloud-off text-xl text-red-500"></i>
+                  <p class="mt-2 font-bold text-red-800">Error al cargar movimientos</p>
+                  <p class="mt-0.5 text-xs text-red-600">No pudimos obtener la lista. Por favor intenta de nuevo.</p>
                 </div>
               } @else if (movements().length === 0) {
-                <div class="rounded-2xl bg-slate-50 p-6 text-center">
-                  <i class="pi pi-sparkles text-2xl text-[var(--ca-gold)]"></i>
-                  <p class="mt-3 font-semibold">Sin movimientos todavía</p>
-                  <p class="mt-1 text-sm text-slate-500">Cuando reportes, votes o confirmes incidencias, verás tus puntos aquí.</p>
+                <div class="rounded-xl bg-slate-50/50 border border-slate-100 p-6 text-center">
+                  <i class="pi pi-sparkles text-xl text-slate-400"></i>
+                  <p class="mt-2 font-bold text-slate-700">Sin movimientos aún</p>
+                  <p class="mt-0.5 text-xs text-slate-500">Cuando reportes, comentes o valides incidencias obtendrás puntos aquí.</p>
                 </div>
               } @else {
                 <div class="grid gap-3">
                   @for (movement of movements(); track movement.idMovimiento) {
-                    <article class="flex items-center gap-4 rounded-2xl bg-slate-50 p-4">
-                      <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-teal-50 text-[var(--ca-teal)]">
-                        <i class="pi pi-check-circle"></i>
+                    <article class="flex items-center gap-4 rounded-xl bg-slate-50 p-4 border border-slate-100">
+                      <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[var(--ca-teal)]/10 text-[var(--ca-teal)]">
+                        <i class="pi pi-check-circle text-sm"></i>
                       </span>
                       <div class="min-w-0 flex-1">
-                        <h3 class="truncate font-semibold">{{ movement.nombreAccion || 'Movimiento' }}</h3>
-                        <p class="mt-1 truncate text-sm text-slate-500">
+                        <h3 class="truncate text-sm font-bold text-slate-800">{{ movement.nombreAccion || 'Movimiento' }}</h3>
+                        <p class="mt-0.5 truncate text-xs text-slate-500">
                           {{ movement.tituloIncidencia || movement.motivo || 'Actividad ciudadana' }}
                         </p>
-                        <p class="mt-1 text-xs font-semibold text-slate-400">{{ movement.creadoEn | date:'dd MMM, HH:mm' }}</p>
+                        <p class="mt-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ movement.creadoEn | date:'dd MMM, HH:mm' }}</p>
                       </div>
-                      <strong class="shrink-0 text-lg" [class.text-teal-600]="movement.puntos >= 0" [class.text-red-600]="movement.puntos < 0">
+                      <strong class="shrink-0 text-sm font-bold" [class.text-[var(--ca-teal)]]="movement.puntos >= 0" [class.text-red-600]="movement.puntos < 0">
                         {{ movement.puntos >= 0 ? '+' : '' }}{{ movement.puntos }} pts
                       </strong>
                     </article>
                   }
                 </div>
               }
-            </p-card>
+            </div>
           </section>
         </section>
       }
