@@ -35,6 +35,9 @@ import { AuthSessionService } from '../auth/auth-session.service';
           <a routerLink="/admin/reportes-contenido" routerLinkActive="ca-admin-active" class="ca-admin-link">
             <i class="pi pi-flag"></i><span>Reportes de contenido</span>
           </a>
+          <a routerLink="/admin/moderacion" routerLinkActive="ca-admin-active" class="ca-admin-link">
+            <i class="pi pi-images"></i><span>Moderación</span>
+          </a>
           <a routerLink="/admin/usuarios" routerLinkActive="ca-admin-active" class="ca-admin-link">
             <i class="pi pi-users"></i><span>Usuarios</span>
           </a>

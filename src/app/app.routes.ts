@@ -108,6 +108,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'moderacion',
+        loadComponent: () =>
+          import('./features/moderacion/imagen-moderacion-page.component').then(
+            (m) => m.ImagenModeracionPageComponent,
+          ),
+      },
+      {
         path: 'auditoria',
         loadComponent: () => import('./features/auditoria/auditoria-page.component').then((m) => m.AuditoriaPageComponent),
       },
