@@ -7,6 +7,9 @@ export interface AuthUser {
   apellidos: string | null;
   aliasPublico: string | null;
   telefono: string | null;
+  telefonoPendiente: string | null;
+  telefonoVerificado: boolean;
+  telefonoVerificadoEn: string | null;
   fotoPerfilUrl: string | null;
   estadoCuenta: string;
   puntosTotales: number;

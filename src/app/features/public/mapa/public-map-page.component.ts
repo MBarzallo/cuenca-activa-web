@@ -8,6 +8,7 @@ import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { MessageService } from 'primeng/api';
 import * as L from 'leaflet';
+import 'leaflet.markercluster';
 import { CategoriaIncidencia, EstadoIncidencia } from '../../../core/models/catalogo.model';
 import { Incidencia, IncidenciaCercana } from '../../../core/models/incidencia.model';
 import { CatalogosService } from '../../../core/services/catalogos.service';
@@ -227,7 +228,7 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
     { label: '10 km', value: 10 },
   ];
   private map: L.Map | null = null;
-  private markers = L.layerGroup();
+  private markers: L.MarkerClusterGroup | null = null;
   private userMarker: L.Marker | null = null;
   private userCircle: L.Circle | null = null;
 
@@ -260,6 +261,10 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
       attribution: '&copy; OpenStreetMap',
     }).addTo(this.map);
     L.control.zoom({ position: 'topright' }).addTo(this.map);
+    this.markers = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 40,
+    });
     this.markers.addTo(this.map);
     this.refreshMap();
   }
@@ -410,20 +415,25 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   refreshMap(fit = false) {
-    if (!this.map) {
+    if (!this.map || !this.markers) {
       return;
     }
     this.markers.clearLayers();
     const bounds: L.LatLngExpression[] = [];
+    const tempMarkers: L.Marker[] = [];
+
     this.filteredIncidencias().forEach((incidencia) => {
       if (Number.isFinite(incidencia.latitud) && Number.isFinite(incidencia.longitud)) {
         bounds.push([incidencia.latitud, incidencia.longitud]);
-        L.marker([incidencia.latitud, incidencia.longitud], { icon: this.getMarkerIcon(incidencia.codigoEstado) })
+        const m = L.marker([incidencia.latitud, incidencia.longitud], { icon: this.getMarkerIcon(incidencia.codigoEstado) })
           .on('click', () => this.selected.set(incidencia))
-          .bindPopup(`<strong>${incidencia.titulo}</strong><br>${incidencia.nombreEstado}`)
-          .addTo(this.markers);
+          .bindPopup(`<strong>${incidencia.titulo}</strong><br>${incidencia.nombreEstado}`);
+        tempMarkers.push(m);
       }
     });
+
+    this.markers.addLayers(tempMarkers);
+
     if (fit && bounds.length > 0) {
       this.map.fitBounds(L.latLngBounds(bounds), { padding: [42, 42], maxZoom: 15 });
     }

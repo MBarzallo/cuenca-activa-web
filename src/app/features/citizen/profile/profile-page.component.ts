@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize, firstValueFrom } from 'rxjs';
@@ -12,11 +12,13 @@ import { TagModule } from 'primeng/tag';
 import { AuthSessionService } from '../../../core/auth/auth-session.service';
 import { PointsMovement } from '../../../core/models/points-movement.model';
 import { UserProfileService } from '../../../core/services/user-profile.service';
+import { linkWithPhoneNumber, PhoneAuthProvider, RecaptchaVerifier, unlink } from 'firebase/auth';
+import { firebaseAuth } from '../../../core/firebase/firebase.client';
 
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, DatePipe, ButtonModule, CardModule, InputTextModule, TagModule],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, DatePipe, ButtonModule, CardModule, InputTextModule, TagModule],
   template: `
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <!-- PAGE HEADER: Light and personal -->
@@ -149,15 +151,53 @@ import { UserProfileService } from '../../../core/services/user-profile.service'
                 <div class="space-y-4 pt-4 border-t border-slate-100">
                   <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Datos de contacto</h3>
                   <div class="grid gap-5 md:grid-cols-2">
-                    <label class="block">
-                      <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Teléfono móvil / contacto</span>
-                      <input pInputText class="w-full" formControlName="telefono" maxlength="20" placeholder="Ej. +593 99 999 9999" />
-                      @if (controlInvalid('telefono')) {
-                        <small class="mt-1.5 block text-xs font-medium text-red-600">El teléfono no debe superar 20 caracteres.</small>
+                    <div class="block">
+                      <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Teléfono móvil</span>
+                      
+                      @if (item.telefonoVerificado) {
+                        <!-- Teléfono Verificado -->
+                        <div class="flex items-center gap-3">
+                          <span class="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-slate-50 font-medium text-slate-700 flex items-center justify-between">
+                            <span>{{ item.telefono }}</span>
+                            <span class="flex items-center gap-1.5 text-xs font-bold text-[var(--ca-teal)]">
+                              <i class="pi pi-verified"></i> Verificado
+                            </span>
+                          </span>
+                          <button pButton type="button" severity="danger" outlined icon="pi pi-trash" tooltip="Desvincular teléfono" (click)="unlinkPhone()"></button>
+                        </div>
+                      } @else {
+                        <!-- Teléfono No Verificado -->
+                        <div class="flex flex-col gap-3">
+                          <div class="flex gap-2">
+                            <input pInputText class="w-full" formControlName="telefono" placeholder="Ej. 0998765432" maxlength="20" [disabled]="sendingOtp() || verifyingOtp()" />
+                            @if (!showOtpInput()) {
+                              <button pButton type="button" icon="pi pi-send" label="Verificar" [loading]="sendingOtp()" (click)="sendVerificationOtp()"></button>
+                            }
+                          </div>
+                          @if (controlInvalid('telefono')) {
+                            <small class="block text-xs font-medium text-red-600">Ingresa un número de celular válido de 9 o 10 dígitos (ej: 0998765432).</small>
+                          }
+                          
+                          @if (showOtpInput()) {
+                            <div class="mt-2 p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+                              <span class="block text-xs font-bold uppercase tracking-wider text-slate-500">Código de verificación (OTP)</span>
+                              <div class="flex gap-2">
+                                <input pInputText class="w-full" [(ngModel)]="otpCode" [ngModelOptions]="{standalone: true}" placeholder="Ingresa los 6 dígitos" maxlength="6" />
+                                <button pButton type="button" icon="pi pi-check" label="Confirmar" [loading]="verifyingOtp()" (click)="confirmVerificationOtp()"></button>
+                              </div>
+                              <div class="flex justify-between items-center text-xs">
+                                <button pButton type="button" class="p-button-text p-0 text-slate-500" label="Cambiar número" (click)="cancelOtp()"></button>
+                              </div>
+                            </div>
+                          }
+                        </div>
                       }
-                    </label>
+                    </div>
                   </div>
                 </div>
+                
+                <!-- Contenedor invisible para reCAPTCHA de Firebase -->
+                <div id="recaptcha-container" class="hidden"></div>
 
                 <!-- Botones de acción -->
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
@@ -264,11 +304,18 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
     return remaining === 0 ? 'Nivel completo' : `${remaining} pts para subir`;
   });
 
+  readonly sendingOtp = signal(false);
+  readonly verifyingOtp = signal(false);
+  readonly showOtpInput = signal(false);
+  otpCode = '';
+  private recaptchaVerifier: any = null;
+  private confirmationResult: any = null;
+
   readonly form = this.fb.nonNullable.group({
     nombres: ['', [Validators.required, Validators.maxLength(100)]],
     apellidos: ['', [Validators.required, Validators.maxLength(100)]],
     aliasPublico: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9._-]+$/)]],
-    telefono: ['', Validators.maxLength(20)],
+    telefono: ['', [Validators.pattern(/^0?9[0-9]{8}$/), Validators.maxLength(20)]],
   });
 
   ngOnInit() {
@@ -278,6 +325,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.revokePreview();
+    this.cancelOtp();
   }
 
   controlInvalid(controlName: keyof typeof this.form.controls): boolean {
@@ -294,6 +342,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       telefono: user?.telefono ?? '',
     });
     this.clearAvatar();
+    this.cancelOtp();
   }
 
   selectAvatar(event: Event) {
@@ -354,7 +403,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
           nombres: value.nombres,
           apellidos: value.apellidos,
           aliasPublico: value.aliasPublico,
-          telefono: value.telefono,
+          telefono: currentUser.telefono,
           fotoPerfilUrl: photoUrl,
         }),
       );
@@ -370,6 +419,166 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
         severity: 'error',
         summary: 'No se pudo guardar',
         detail: this.errorMessage(error, 'Intenta nuevamente en unos minutos.'),
+      });
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  private normalizarTelefono(raw: string): string {
+    let clean = raw.replace(/\D/g, '');
+    if (clean.startsWith('593')) {
+      return '+' + clean;
+    }
+    if (clean.startsWith('0')) {
+      clean = clean.substring(1);
+    }
+    return '+593' + clean;
+  }
+
+  async sendVerificationOtp() {
+    const rawPhone = this.form.controls.telefono.value;
+    if (!rawPhone || rawPhone.trim().length < 9) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Número no válido',
+        detail: 'Por favor ingresa un número de celular válido de 9 o 10 dígitos (ej: 0998765432).',
+      });
+      return;
+    }
+
+    const normalizedPhone = this.normalizarTelefono(rawPhone);
+    this.sendingOtp.set(true);
+
+    try {
+      await firstValueFrom(this.profileService.checkPhoneAvailability(normalizedPhone));
+
+      if (!this.recaptchaVerifier) {
+        this.recaptchaVerifier = new RecaptchaVerifier(firebaseAuth, 'recaptcha-container', {
+          size: 'invisible',
+        });
+      }
+
+      const currentUser = firebaseAuth.currentUser;
+      if (!currentUser) {
+        throw new Error('No hay una sesión activa de Firebase.');
+      }
+
+      this.confirmationResult = await linkWithPhoneNumber(
+        currentUser,
+        normalizedPhone,
+        this.recaptchaVerifier
+      );
+
+      this.showOtpInput.set(true);
+      this.otpCode = '';
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Código enviado',
+        detail: 'Hemos enviado un código SMS de verificación a tu celular.',
+      });
+    } catch (error: any) {
+      if (error instanceof HttpErrorResponse && error.status === 409) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Número en uso',
+          detail: 'Este número celular ya está verificado por otra cuenta.',
+        });
+      } else {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al enviar SMS',
+          detail: this.errorMessage(error, 'Ocurrió un error al enviar el código. Revisa el número e intenta de nuevo.'),
+        });
+      }
+      this.recaptchaVerifier?.clear();
+      this.recaptchaVerifier = null;
+    } finally {
+      this.sendingOtp.set(false);
+    }
+  }
+
+  async confirmVerificationOtp() {
+    if (!this.otpCode || this.otpCode.length !== 6) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Código no válido',
+        detail: 'Ingresa el código de 6 dígitos que recibiste por SMS.',
+      });
+      return;
+    }
+
+    this.verifyingOtp.set(true);
+    try {
+      await this.confirmationResult.confirm(this.otpCode);
+      await firstValueFrom(this.profileService.syncPhone());
+      await this.session.loadCurrentUser();
+
+      this.showOtpInput.set(false);
+      this.otpCode = '';
+      this.recaptchaVerifier?.clear();
+      this.recaptchaVerifier = null;
+      this.confirmationResult = null;
+
+      this.resetForm();
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Celular verificado',
+        detail: 'Tu número celular ha sido verificado y guardado con éxito.',
+      });
+    } catch (error) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error de verificación',
+        detail: this.errorMessage(error, 'El código ingresado es incorrecto o expiró.'),
+      });
+    } finally {
+      this.verifyingOtp.set(false);
+    }
+  }
+
+  cancelOtp() {
+    this.showOtpInput.set(false);
+    this.otpCode = '';
+    this.recaptchaVerifier?.clear();
+    this.recaptchaVerifier = null;
+    this.confirmationResult = null;
+  }
+
+  async unlinkPhone() {
+    const user = firebaseAuth.currentUser;
+    if (!user) return;
+
+    this.saving.set(true);
+    try {
+      const phoneProvider = user.providerData.find(p => p.providerId === PhoneAuthProvider.PROVIDER_ID);
+      if (phoneProvider) {
+        await unlink(user, PhoneAuthProvider.PROVIDER_ID);
+      }
+
+      await firstValueFrom(
+        this.profileService.updateProfile({
+          nombres: this.form.controls.nombres.value,
+          apellidos: this.form.controls.apellidos.value,
+          aliasPublico: this.form.controls.aliasPublico.value,
+          telefono: null,
+          fotoPerfilUrl: this.user()?.fotoPerfilUrl,
+        })
+      );
+
+      await this.session.loadCurrentUser();
+      this.resetForm();
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Celular desvinculado',
+        detail: 'El número celular ha sido desvinculado de tu cuenta.',
+      });
+    } catch (error) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: this.errorMessage(error, 'No se pudo desvincular el celular.'),
       });
     } finally {
       this.saving.set(false);

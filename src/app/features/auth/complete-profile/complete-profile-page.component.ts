@@ -168,7 +168,7 @@ export class CompleteProfilePageComponent implements OnInit {
       nombres: ['', [Validators.required, Validators.maxLength(100)]],
       apellidos: ['', [Validators.required, Validators.maxLength(100)]],
       aliasPublico: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9._-]+$/)]],
-      telefono: ['', Validators.maxLength(20)],
+      telefono: ['', [Validators.pattern(/^0?9[0-9]{8}$/), Validators.maxLength(20)]],
     });
   }
 

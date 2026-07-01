@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed, effect, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -51,48 +51,75 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
 
       <!-- LISTING AREA: Grid with custom styled borderless table & sidebar prompts -->
       <section class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div class="border-b border-slate-100 px-6 py-5">
-            <h2 class="text-lg font-bold text-slate-800">Listado de reportes</h2>
-            <p class="mt-1 text-sm text-slate-500">Haz clic en ver detalle para revisar comentarios, fotos y votar.</p>
-          </div>
-          
-          <div class="p-1 sm:p-4">
-            <p-table [value]="filteredIncidencias()" [paginator]="true" [rows]="10" responsiveLayout="stack" styleClass="p-datatable-sm ca-clean-table border-0">
-              <ng-template pTemplate="header">
-                <tr class="hidden lg:table-row">
-                  <th class="w-[50%]">Reporte</th>
-                  <th class="w-[18%]">Categoría</th>
-                  <th class="w-[14%] font-medium">Estado</th>
-                  <th class="w-[14%] font-medium">Sector</th>
-                  <th class="w-[4%]"></th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-incidencia>
-                <tr class="group hover:bg-slate-50/50 transition-colors duration-200 border-b border-slate-100/60">
-                  <td class="py-4">
-                    <div class="font-bold text-slate-800 group-hover:text-[var(--ca-teal)] transition-colors">{{ incidencia.titulo }}</div>
-                    <div class="mt-1.5 line-clamp-1 max-w-xl text-sm text-slate-500">{{ incidencia.descripcion }}</div>
-                  </td>
-                  <td class="py-4 text-sm">
-                    <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+        <div class="space-y-6">
+          <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            @for (incidencia of paginatedIncidencias(); track incidencia.idIncidencia) {
+              <article class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-350 hover:-translate-y-1 hover:shadow-md">
+                <div class="space-y-3">
+                  <!-- Header: Category & Status -->
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--ca-teal)]">
                       {{ incidencia.nombreCategoria }}
                     </span>
-                  </td>
-                  <td class="py-4"><p-tag [value]="incidencia.nombreEstado" [severity]="tagSeverity(incidencia.codigoEstado)"></p-tag></td>
-                  <td class="py-4 text-sm text-slate-500">
-                    <span class="inline-flex items-center gap-1.5 truncate">
-                      <i class="pi pi-map-marker text-xs shrink-0 text-slate-400"></i>
-                      <span class="truncate">{{ incidencia.nombreSector || incidencia.direccionReferencial || 'Cuenca' }}</span>
+                    <p-tag [value]="incidencia.nombreEstado" [severity]="tagSeverity(incidencia.codigoEstado)" styleClass="text-[9px] px-2 py-0.5 font-bold"></p-tag>
+                  </div>
+
+                  <!-- Content -->
+                  <div>
+                    <h3 class="font-bold text-slate-800 group-hover:text-[var(--ca-teal)] transition-colors line-clamp-1 leading-snug">
+                      {{ incidencia.titulo }}
+                    </h3>
+                    <p class="mt-1.5 text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                      {{ incidencia.descripcion }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-slate-100 space-y-3.5">
+                  <!-- Metadata: Location -->
+                  <div class="flex flex-col gap-1 text-[11px] text-slate-400">
+                    <span class="flex items-center gap-1.5 min-w-0">
+                      <i class="pi pi-map-marker text-[var(--ca-teal)] shrink-0"></i>
+                      <span class="truncate font-semibold text-slate-500">{{ incidencia.nombreSector || incidencia.direccionReferencial || 'Cuenca' }}</span>
                     </span>
-                  </td>
-                  <td class="py-4 text-right">
-                    <a [routerLink]="['/incidencias', incidencia.idIncidencia]" pButton size="small" icon="pi pi-chevron-right" label="Ver" class="p-button-text p-button-rounded group-hover:translate-x-1 transition-all"></a>
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
+                  </div>
+
+                  <!-- Footer actions and stats -->
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex gap-2.5 text-slate-400 text-[11px] font-bold">
+                      <span class="flex items-center gap-1" title="Comentarios">
+                        <i class="pi pi-comment"></i>
+                        <span>{{ incidencia.cantidadComentarios }}</span>
+                      </span>
+                      <span class="flex items-center gap-1 text-emerald-600" title="Confirmaciones">
+                        <i class="pi pi-check-circle"></i>
+                        <span>{{ incidencia.cantidadConfirmaciones }}</span>
+                      </span>
+                    </div>
+
+                    <a [routerLink]="['/incidencias', incidencia.idIncidencia]" pButton size="small" icon="pi pi-arrow-right" severity="secondary" label="Ver detalle" class="p-button-text p-0 text-xs font-bold hover:text-[var(--ca-teal)]"></a>
+                  </div>
+                </div>
+              </article>
+            } @empty {
+              <div class="col-span-full py-16 text-center bg-white rounded-2xl border border-slate-200 shadow-xs">
+                <i class="pi pi-inbox text-slate-300 text-4xl"></i>
+                <p class="mt-3 font-bold text-slate-700">No se encontraron reportes</p>
+                <p class="mt-1 text-xs text-slate-500">Prueba ajustando los filtros o buscando otro término.</p>
+              </div>
+            }
           </div>
+
+          <!-- Pagination Controls -->
+          @if (totalPageCount() > 1) {
+            <div class="flex items-center justify-center gap-2 pt-4">
+              <button pButton severity="secondary" outlined icon="pi pi-angle-left" [disabled]="currentPage() === 0" (click)="prevPage()"></button>
+              <span class="text-xs font-bold text-slate-500 px-3">
+                Página {{ currentPage() + 1 }} de {{ totalPageCount() }}
+              </span>
+              <button pButton severity="secondary" outlined icon="pi pi-angle-right" [disabled]="currentPage() >= totalPageCount() - 1" (click)="nextPage()"></button>
+            </div>
+          }
         </div>
 
         <aside class="space-y-6">
@@ -122,10 +149,30 @@ export class PublicIncidenciasPageComponent implements OnInit {
   searchTerm = '';
   estadoSeleccionado: string | null = null;
 
+  // Pagination properties
+  readonly currentPage = signal(0);
+  readonly pageSize = 9;
+
+  readonly paginatedIncidencias = computed(() => {
+    const list = this.filteredIncidencias();
+    const start = this.currentPage() * this.pageSize;
+    return list.slice(start, start + this.pageSize);
+  });
+
+  readonly totalPageCount = computed(() => {
+    return Math.ceil(this.filteredIncidencias().length / this.pageSize);
+  });
+
   constructor(
     private readonly incidenciasService: IncidenciasService,
     private readonly catalogosService: CatalogosService,
-  ) {}
+  ) {
+    // Reset page to 0 when search term or filter changes
+    effect(() => {
+      this.filteredIncidencias();
+      untracked(() => this.currentPage.set(0));
+    });
+  }
 
   ngOnInit() {
     this.incidenciasService.list({ limit: 100, offset: 0 }).subscribe((items) => this.incidencias.set(items));
@@ -143,6 +190,14 @@ export class PublicIncidenciasPageComponent implements OnInit {
         (incidencia.direccionReferencial ?? '').toLowerCase().includes(term);
       return matchesText && (!this.estadoSeleccionado || incidencia.codigoEstado === this.estadoSeleccionado);
     });
+  }
+
+  prevPage() {
+    this.currentPage.update((p) => Math.max(0, p - 1));
+  }
+
+  nextPage() {
+    this.currentPage.update((p) => Math.min(this.totalPageCount() - 1, p + 1));
   }
 
   activeCount(): number {

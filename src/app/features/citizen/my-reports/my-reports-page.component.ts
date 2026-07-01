@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, effect, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -68,96 +68,85 @@ import { citizenStatusOptions, isFinalCitizenIncident } from '../../../shared/ut
             <span class="text-xs font-semibold text-slate-500">Categoría</span>
             <p-select class="w-full" [(ngModel)]="selectedCategory" [options]="categoryOptions()" optionLabel="nombre" optionValue="idCategoria" placeholder="Todas" [showClear]="true"></p-select>
           </div>
-          <button pButton severity="secondary" outlined icon="pi pi-filter-slash" label="Limpiar" (click)="clearFilters()" class="w-full hover:bg-slate-50 transition-colors"></button>
         </div>
       </div>
 
       <section class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <!-- TABLE VIEW -->
-        <div class="hidden md:block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div class="border-b border-slate-100 px-6 py-5">
-            <h2 class="text-lg font-bold text-slate-800">Listado de reportes</h2>
-            <p class="mt-1 text-sm text-slate-500">Accede al detalle o actualiza el estado si el reporte sigue activo.</p>
-          </div>
+        <!-- Unified Responsive Card Grid -->
+        <div class="space-y-6">
+          <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            @for (reporte of paginatedReports(); track reporte.idIncidencia) {
+              <article class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-350 hover:-translate-y-1 hover:shadow-md">
+                <div class="space-y-3">
+                  <!-- Header: Category & Status -->
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--ca-teal)]">
+                      {{ reporte.nombreCategoria }}
+                    </span>
+                    <p-tag [value]="reporte.nombreEstado" [severity]="tagSeverity(reporte.codigoEstado)" styleClass="text-[9px] px-2 py-0.5 font-bold"></p-tag>
+                  </div>
 
-          <div class="p-4">
-            <p-table [value]="filteredReports()" [paginator]="true" [rows]="10" responsiveLayout="stack" styleClass="p-datatable-sm ca-clean-table border-0">
-              <ng-template pTemplate="header">
-                <tr class="hidden lg:table-row">
-                  <th>Reporte</th>
-                  <th>Categoría</th>
-                  <th>Estado</th>
-                  <th>Actividad</th>
-                  <th>Fecha</th>
-                  <th></th>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="body" let-reporte>
-                <tr class="group hover:bg-slate-50/50 transition-colors duration-200 border-b border-slate-100/60">
-                  <td class="py-4">
-                    <div class="max-w-md">
-                      <div class="font-bold text-slate-800 group-hover:text-[var(--ca-teal)] transition-colors">{{ reporte.titulo }}</div>
-                      <div class="mt-1 line-clamp-1 text-sm text-slate-500">{{ reporte.descripcion }}</div>
-                      <div class="mt-1.5 text-xs text-slate-400 flex items-center gap-1">
-                        <i class="pi pi-map-marker"></i>
-                        <span>{{ reporte.nombreSector || reporte.direccionReferencial || 'Cuenca' }}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="py-4 text-sm">{{ reporte.nombreCategoria }}</td>
-                  <td class="py-4"><p-tag [value]="reporte.nombreEstado" [severity]="tagSeverity(reporte.codigoEstado)"></p-tag></td>
-                  <td class="py-4">
-                    <div class="flex flex-wrap gap-2 text-xs font-semibold text-slate-400">
-                      <span class="inline-flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-full text-slate-600"><i class="pi pi-check-circle text-[10px]"></i> {{ reporte.cantidadValidaciones }}</span>
-                      <span class="inline-flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-full text-slate-600"><i class="pi pi-comments text-[10px]"></i> {{ reporte.cantidadComentarios }}</span>
-                    </div>
-                  </td>
-                  <td class="py-4 text-sm text-slate-500">{{ reporte.fechaReporte | date:'dd MMM yyyy' }}</td>
-                  <td class="py-4 text-right">
-                    <div class="flex justify-end gap-2">
-                      <a [routerLink]="['/incidencias', reporte.idIncidencia]" pButton size="small" severity="secondary" outlined icon="pi pi-eye" label="Detalle" class="px-3 hover:bg-slate-50 transition-colors"></a>
-                      <button pButton size="small" icon="pi pi-sync" label="Estado" [disabled]="isFinal(reporte) || availableStatusOptions(reporte).length === 0" (click)="openStatusDialog(reporte)" class="px-3"></button>
-                    </div>
-                  </td>
-                </tr>
-              </ng-template>
-              <ng-template pTemplate="emptymessage">
-                <tr>
-                  <td colspan="6">
-                    <div class="p-8 text-center text-slate-400 font-medium">No hay reportes que coincidan con los filtros.</div>
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
-          </div>
-        </div>
-
-        <!-- MOBILE VIEW -->
-        <section class="grid gap-4 md:hidden">
-          @for (reporte of filteredReports(); track reporte.idIncidencia) {
-            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <h2 class="font-bold text-slate-800 line-clamp-2">{{ reporte.titulo }}</h2>
-                  <p class="mt-1 text-xs text-slate-400 font-semibold">{{ reporte.nombreCategoria }}</p>
+                  <!-- Content -->
+                  <div>
+                    <h3 class="font-bold text-slate-800 group-hover:text-[var(--ca-teal)] transition-colors line-clamp-1 leading-snug">
+                      {{ reporte.titulo }}
+                    </h3>
+                    <p class="mt-1.5 text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                      {{ reporte.descripcion }}
+                    </p>
+                  </div>
                 </div>
-                <p-tag [value]="reporte.nombreEstado" [severity]="tagSeverity(reporte.codigoEstado)"></p-tag>
+
+                <div class="mt-5 pt-4 border-t border-slate-100 space-y-3.5">
+                  <!-- Metadata: Location & Date -->
+                  <div class="flex flex-col gap-1 text-[11px] text-slate-400">
+                    <span class="flex items-center gap-1.5 min-w-0">
+                      <i class="pi pi-map-marker text-[var(--ca-teal)] shrink-0"></i>
+                      <span class="truncate font-semibold text-slate-500">{{ reporte.nombreSector || reporte.direccionReferencial || 'Cuenca' }}</span>
+                    </span>
+                    <span class="text-[10px] text-slate-400 mt-0.5">Reportado el {{ reporte.fechaReporte | date:'dd MMM yyyy' }}</span>
+                  </div>
+
+                  <!-- Footer actions and stats -->
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex gap-2.5 text-slate-450 text-[11px] font-bold">
+                      <span class="flex items-center gap-1" title="Comentarios">
+                        <i class="pi pi-comment"></i>
+                        <span>{{ reporte.cantidadComentarios }}</span>
+                      </span>
+                      <span class="flex items-center gap-1 text-emerald-600" title="Confirmaciones">
+                        <i class="pi pi-check-circle"></i>
+                        <span>{{ reporte.cantidadConfirmaciones }}</span>
+                      </span>
+                    </div>
+
+                    <div class="flex items-center gap-1.5">
+                      <a [routerLink]="['/incidencias', reporte.idIncidencia]" pButton size="small" icon="pi pi-eye" severity="secondary" outlined class="h-7 w-7 p-0 flex items-center justify-center rounded-full" title="Ver detalle"></a>
+                      <button pButton size="small" icon="pi pi-sync" [disabled]="isFinal(reporte) || availableStatusOptions(reporte).length === 0" (click)="openStatusDialog(reporte)" class="h-7 px-2.5 text-xs font-bold" label="Estado" title="Cambiar estado"></button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            } @empty {
+              <div class="col-span-full py-16 text-center bg-white rounded-2xl border border-slate-200 shadow-xs">
+                <i class="pi pi-inbox text-slate-300 text-4xl"></i>
+                <p class="mt-3 font-bold text-slate-700">No se encontraron reportes</p>
+                <p class="mt-1 text-xs text-slate-500">Prueba ajustando los filtros o creando una incidencia.</p>
               </div>
-              <p class="mt-3 line-clamp-2 text-xs leading-relaxed text-slate-500">{{ reporte.descripcion }}</p>
-              <div class="mt-3.5 flex flex-wrap gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                <span class="bg-slate-100 px-2 py-0.5 rounded-full text-slate-600"><i class="pi pi-comments text-[9px]"></i> {{ reporte.cantidadComentarios }} com.</span>
-                <span class="bg-slate-100 px-2 py-0.5 rounded-full text-slate-600"><i class="pi pi-check-circle text-[9px]"></i> {{ reporte.cantidadValidaciones }} val.</span>
-                <span class="ml-auto text-slate-400 font-normal">{{ reporte.fechaReporte | date:'dd MMM yyyy' }}</span>
-              </div>
-              <div class="mt-4 flex gap-2">
-                <a [routerLink]="['/incidencias', reporte.idIncidencia]" class="flex-1 justify-center hover:bg-slate-50 transition-colors" pButton size="small" severity="secondary" outlined icon="pi pi-eye" label="Detalle"></a>
-                <button pButton class="flex-1 justify-center" size="small" icon="pi pi-sync" label="Estado" [disabled]="isFinal(reporte) || availableStatusOptions(reporte).length === 0" (click)="openStatusDialog(reporte)"></button>
-              </div>
-            </article>
-          } @empty {
-            <div class="rounded-2xl border border-dashed border-slate-350 bg-white p-8 text-center text-slate-400 font-medium">No hay reportes que coincidan con los filtros.</div>
+            }
+          </div>
+
+          <!-- Pagination Controls -->
+          @if (totalPageCount() > 1) {
+            <div class="flex items-center justify-center gap-2 pt-4">
+              <button pButton severity="secondary" outlined icon="pi pi-angle-left" [disabled]="currentPage() === 0" (click)="prevPage()"></button>
+              <span class="text-xs font-bold text-slate-500 px-3">
+                Página {{ currentPage() + 1 }} de {{ totalPageCount() }}
+              </span>
+              <button pButton severity="secondary" outlined icon="pi pi-angle-right" [disabled]="currentPage() >= totalPageCount() - 1" (click)="nextPage()"></button>
+            </div>
           }
-        </section>
+        </div>
 
         <!-- SIDEBAR -->
         <aside class="space-y-6">
@@ -235,6 +224,35 @@ export class MyReportsPageComponent implements OnInit {
   statusDialogVisible = false;
   newStatusCode: string | null = null;
   statusObservation = '';
+
+  // Pagination
+  readonly currentPage = signal(0);
+  readonly pageSize = 6;
+
+  readonly paginatedReports = computed(() => {
+    const list = this.filteredReports();
+    const start = this.currentPage() * this.pageSize;
+    return list.slice(start, start + this.pageSize);
+  });
+
+  readonly totalPageCount = computed(() => {
+    return Math.ceil(this.filteredReports().length / this.pageSize);
+  });
+
+  constructor() {
+    effect(() => {
+      this.filteredReports();
+      untracked(() => this.currentPage.set(0));
+    });
+  }
+
+  prevPage() {
+    this.currentPage.update((p) => Math.max(0, p - 1));
+  }
+
+  nextPage() {
+    this.currentPage.update((p) => Math.min(this.totalPageCount() - 1, p + 1));
+  }
 
   ngOnInit() {
     this.load();

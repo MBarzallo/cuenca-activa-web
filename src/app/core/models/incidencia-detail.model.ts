@@ -13,6 +13,9 @@ export interface ArchivoMultimedia {
   ordenVisualizacion: number | null;
   esPrincipal: boolean;
   subidoEn: string;
+  estadoRevision: string;
+  visiblePublicamente: boolean;
+  motivoRevision: string | null;
 }
 
 export interface ComentarioIncidencia {

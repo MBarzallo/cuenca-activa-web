@@ -109,9 +109,24 @@ import { AdminUsuario } from '../../core/models/admin-usuario.model';
                   </div>
                 </div>
               </td>
-              <td class="text-sm text-slate-700">
-                <div>{{ user.email }}</div>
-                <div class="text-slate-550 text-xs mt-0.5">{{ user.telefono || 'Sin teléfono' }}</div>
+              <td class="text-sm text-slate-700" (click)="$event.stopPropagation()">
+                <div class="flex items-center justify-between gap-1.5">
+                  <div class="min-w-0">
+                    <div class="font-medium text-slate-800 truncate" [title]="user.email">{{ isRevealed(user.idUsuario) ? user.email : maskEmail(user.email) }}</div>
+                    <div class="text-slate-500 text-xs mt-0.5">{{ isRevealed(user.idUsuario) ? (user.telefono || 'Sin teléfono') : maskPhone(user.telefono) }}</div>
+                  </div>
+                  <button 
+                    pButton
+                    type="button"
+                    [text]="true"
+                    [rounded]="true"
+                    severity="secondary"
+                    [icon]="isRevealed(user.idUsuario) ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                    class="h-7 w-7 text-slate-400 hover:text-[var(--ca-teal)] flex-shrink-0"
+                    (click)="toggleReveal(user.idUsuario, $event)"
+                    [title]="isRevealed(user.idUsuario) ? 'Ocultar contacto' : 'Mostrar contacto'"
+                  ></button>
+                </div>
               </td>
               <td (click)="$event.stopPropagation()">
                 <div class="flex items-center gap-2">
@@ -215,11 +230,28 @@ import { AdminUsuario } from '../../core/models/admin-usuario.model';
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <span class="text-[10px] font-bold text-slate-400 block uppercase">Correo Electrónico</span>
-                  <span class="font-semibold block mt-1 truncate" [title]="user.email">{{ user.email }}</span>
+                  <div class="flex items-center gap-1.5 mt-1">
+                    <span class="font-semibold truncate" [title]="user.email">
+                      {{ isRevealed(user.idUsuario) ? user.email : maskEmail(user.email) }}
+                    </span>
+                    <button 
+                      pButton
+                      type="button"
+                      [text]="true"
+                      [rounded]="true"
+                      severity="secondary"
+                      [icon]="isRevealed(user.idUsuario) ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                      class="h-6 w-6 p-0 text-slate-400 hover:text-[var(--ca-teal)]"
+                      (click)="toggleReveal(user.idUsuario, $event)"
+                      [title]="isRevealed(user.idUsuario) ? 'Ocultar' : 'Revelar'"
+                    ></button>
+                  </div>
                 </div>
                 <div>
                   <span class="text-[10px] font-bold text-slate-400 block uppercase">Teléfono</span>
-                  <span class="font-semibold block mt-1">{{ user.telefono || 'Sin registrar' }}</span>
+                  <span class="font-semibold block mt-1.5">
+                    {{ isRevealed(user.idUsuario) ? (user.telefono || 'Sin registrar') : maskPhone(user.telefono) }}
+                  </span>
                 </div>
               </div>
 
@@ -441,6 +473,49 @@ export class UsuariosPageComponent implements OnInit {
         this.fetchUsuarios();
       }
     });
+  }
+
+  // Helpers de enmascaramiento e información sensible
+  readonly revealedUsers = signal<Set<string>>(new Set());
+
+  isRevealed(userId: string): boolean {
+    return this.revealedUsers().has(userId);
+  }
+
+  toggleReveal(userId: string, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.revealedUsers.update(set => {
+      const newSet = new Set(set);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  }
+
+  maskEmail(email: string | null | undefined): string {
+    if (!email) return 'Sin correo';
+    const parts = email.split('@');
+    if (parts.length !== 2) return email;
+    const name = parts[0];
+    const domain = parts[1];
+    if (name.length <= 2) {
+      return name[0] + '*@' + domain;
+    }
+    return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1] + '@' + domain;
+  }
+
+  maskPhone(phone: string | null | undefined): string {
+    if (!phone) return 'Sin teléfono';
+    const cleaned = phone.trim();
+    if (cleaned.length <= 4) {
+      return '*'.repeat(cleaned.length);
+    }
+    return cleaned.substring(0, 2) + '*'.repeat(cleaned.length - 4) + cleaned.substring(cleaned.length - 2);
   }
 
   // Helpers de visualización

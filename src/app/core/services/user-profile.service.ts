@@ -37,6 +37,14 @@ export class UserProfileService {
     return this.api.get<PointsMovement[]>('/api/usuarios/me/movimientos-puntos', { limit, offset });
   }
 
+  checkPhoneAvailability(telefono: string): Observable<void> {
+    return this.api.get<void>('/api/auth/phone/check', { telefono });
+  }
+
+  syncPhone(): Observable<AuthUser> {
+    return this.api.post<AuthUser>('/api/auth/phone/sync', {});
+  }
+
   async uploadProfilePhoto(file: File): Promise<string> {
     const user = firebaseAuth.currentUser;
     if (!user) {

@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -42,7 +42,9 @@ import { citizenStatusOptions, isFinalCitizenIncident } from '../../../shared/ut
 
       @if (incidencia(); as item) {
         <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <!-- COLUMNA PRINCIPAL (Izquierda) -->
           <div class="space-y-6">
+            <!-- Incidencia principal -->
             <article class="overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-slate-200">
               @if (principalImage(); as image) {
                 <div class="group relative h-72 cursor-zoom-in bg-slate-100 sm:h-96" (click)="openImageViewer(galleryImages(), galleryIndex(image))">
@@ -64,6 +66,19 @@ import { citizenStatusOptions, isFinalCitizenIncident } from '../../../shared/ut
               }
 
               <div class="p-6 sm:p-8">
+                <!-- Banner de revisión de imágenes (solo dueño de incidencia) -->
+                @if (isOwner(item) && reviewNotice(); as notice) {
+                  <div class="mb-6 flex gap-4 rounded-2xl border p-4.5" [class]="notice.class">
+                    <span class="flex-shrink-0 text-xl" [class]="notice.iconColor">
+                      <i [class]="notice.icon"></i>
+                    </span>
+                    <div>
+                      <h4 class="font-bold text-slate-800 text-sm leading-snug">{{ notice.title }}</h4>
+                      <p class="mt-1 text-slate-500 text-xs leading-normal">{{ notice.message }}</p>
+                    </div>
+                  </div>
+                }
+
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p class="text-sm font-bold uppercase tracking-[0.16em] text-[var(--ca-teal)]">{{ item.nombreCategoria }}</p>
@@ -98,6 +113,18 @@ import { citizenStatusOptions, isFinalCitizenIncident } from '../../../shared/ut
               </div>
             </article>
 
+            <!-- Ubicación Map Card -->
+            <p-card styleClass="border-0 shadow-sm">
+              <ng-template pTemplate="header">
+                <div class="border-b border-slate-100 px-5 py-4">
+                  <h2 class="text-lg font-semibold">Ubicación geográfica</h2>
+                  <p class="mt-1 text-sm text-slate-500">{{ item.direccionReferencial || item.nombreSector || 'Cuenca' }}</p>
+                </div>
+              </ng-template>
+              <div id="incident-detail-map" class="h-64 overflow-hidden rounded-2xl border border-slate-150"></div>
+            </p-card>
+
+            <!-- Galería de imágenes (si hay más de 1) -->
             @if (galleryImages().length > 1) {
               <p-card styleClass="border-0 shadow-sm">
                 <ng-template pTemplate="header">
@@ -131,156 +158,7 @@ import { citizenStatusOptions, isFinalCitizenIncident } from '../../../shared/ut
               </p-card>
             }
 
-            <p-card styleClass="border-0 shadow-sm">
-              <ng-template pTemplate="header">
-                <div class="border-b border-slate-100 px-5 py-4">
-                  <h2 class="text-lg font-semibold">Seguimiento</h2>
-                  <p class="mt-1 text-sm text-slate-500">Cambios registrados para este reporte.</p>
-                </div>
-              </ng-template>
-              <div class="space-y-4">
-                @for (itemHistorial of historial(); track itemHistorial.idHistorial) {
-                  <div class="flex gap-4">
-                    <span class="mt-1 h-3 w-3 rounded-full bg-[var(--ca-teal)] ring-4 ring-teal-50"></span>
-                    <div class="flex-1 border-b border-slate-100 pb-4">
-                      <div class="flex flex-wrap items-center gap-2">
-                        <p class="font-semibold">{{ itemHistorial.nombreEstadoNuevo }}</p>
-                        <span class="text-sm text-slate-500">{{ itemHistorial.cambiadoEn | date: 'medium' }}</span>
-                      </div>
-                      @if (itemHistorial.observacion) {
-                        <p class="mt-2 text-sm leading-6 text-slate-600">{{ itemHistorial.observacion }}</p>
-                      }
-                    </div>
-                  </div>
-                } @empty {
-                  <p class="rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">Aún no hay historial para mostrar.</p>
-                }
-              </div>
-            </p-card>
-          </div>
-
-          <aside class="space-y-6">
-            @if (isOwner(item)) {
-              <p-card styleClass="border-0 bg-amber-50 shadow-sm ring-1 ring-amber-100">
-                <div class="flex gap-4">
-                  <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[var(--ca-gold)]/20 text-[var(--ca-gold)]">
-                    <i class="pi pi-sync"></i>
-                  </span>
-                  <div class="min-w-0 flex-1">
-                    <h2 class="text-lg font-semibold text-[var(--ca-navy)]">Gestionar estado</h2>
-                    <p class="mt-2 text-sm leading-6 text-slate-600">Como propietario puedes actualizar el avance de tu reporte.</p>
-                    <button
-                      pButton
-                      class="mt-4 w-full justify-center"
-                      severity="secondary"
-                      outlined
-                      icon="pi pi-flag"
-                      label="Cambiar estado"
-                      [disabled]="isFinal(item) || availableStatusOptions(item).length === 0"
-                      (click)="openStatusDialog(item)"
-                    ></button>
-                  </div>
-                </div>
-              </p-card>
-            }
-
-            <p-card styleClass="border-0 shadow-sm">
-              <h2 class="text-lg font-semibold">Participar</h2>
-              <p class="mt-2 text-sm leading-6 text-slate-600">Ayuda a mantener actualizada la información de este reporte.</p>
-
-              <div class="mt-4 grid gap-2">
-                <button
-                  pButton
-                  [outlined]="!seguimiento()?.siguiendo"
-                  severity="secondary"
-                  icon="pi pi-bell"
-                  [label]="seguimiento()?.siguiendo ? 'Siguiendo' : 'Seguir reporte'"
-                  (click)="toggleFollow(item)"
-                ></button>
-                <button
-                  pButton
-                  outlined
-                  severity="secondary"
-                  icon="pi pi-check-circle"
-                  [label]="confirmaciones()?.usuarioYaConfirmo ? 'Ya notificaste completado' : 'Notificar como completado'"
-                  [disabled]="confirmaciones()?.usuarioYaConfirmo === true"
-                  (click)="openCompletionDialog()"
-                ></button>
-                <button pButton text severity="danger" icon="pi pi-flag" label="Denunciar contenido" (click)="openReportDialog(item.idIncidencia, 'INCIDENCIA')"></button>
-              </div>
-              @if (confirmaciones(); as resumenConfirmaciones) {
-                <div class="mt-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                  <span class="font-semibold text-[var(--ca-navy)]">{{ resumenConfirmaciones.totalConfirmaciones }}</span> confirmaciones de solución
-                </div>
-              }
-            </p-card>
-
-            <p-card styleClass="border-0 shadow-sm">
-              <ng-template pTemplate="header">
-                <div class="border-b border-slate-100 px-5 py-4">
-                  <h2 class="text-lg font-semibold">Validación comunitaria</h2>
-                  <p class="mt-1 text-sm text-slate-500">Indica si este reporte existe, no corresponde o necesita prioridad.</p>
-                </div>
-              </ng-template>
-
-              <div class="grid grid-cols-3 gap-2">
-                <div class="rounded-2xl bg-emerald-50 p-3 text-center">
-                  <i class="pi pi-check-circle text-emerald-600"></i>
-                  <strong class="mt-1 block text-lg">{{ voteCount('CONFIRMA_EXISTENCIA') }}</strong>
-                  <span class="text-xs text-slate-500">Existe</span>
-                </div>
-                <div class="rounded-2xl bg-rose-50 p-3 text-center">
-                  <i class="pi pi-times-circle text-rose-600"></i>
-                  <strong class="mt-1 block text-lg">{{ voteCount('NO_EXISTE') }}</strong>
-                  <span class="text-xs text-slate-500">No corresponde</span>
-                </div>
-                <div class="rounded-2xl bg-amber-50 p-3 text-center">
-                  <i class="pi pi-exclamation-circle text-amber-600"></i>
-                  <strong class="mt-1 block text-lg">{{ voteCount('IMPORTANTE') }}</strong>
-                  <span class="text-xs text-slate-500">Importante</span>
-                </div>
-              </div>
-
-              @if (votos()?.usuarioYaVoto && votos()?.votoUsuario; as userVote) {
-                <div class="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-                  <p class="font-semibold text-emerald-900">Ya validaste este reporte</p>
-                  <p class="mt-1 text-sm text-emerald-800">{{ voteRegisteredLabel(userVote.tipoVoto) }}</p>
-                  @if (userVote.observacion) {
-                    <p class="mt-2 text-sm text-slate-600">{{ userVote.observacion }}</p>
-                  }
-                </div>
-              } @else if (isLoggedIn()) {
-                <div class="mt-4 space-y-3">
-                  <div class="grid gap-2">
-                    <button pButton [outlined]="selectedVoteType !== 'CONFIRMA_EXISTENCIA'" severity="secondary" icon="pi pi-check-circle" label="Confirmo que existe" (click)="selectedVoteType = 'CONFIRMA_EXISTENCIA'"></button>
-                    <button pButton [outlined]="selectedVoteType !== 'NO_EXISTE'" severity="secondary" icon="pi pi-times-circle" label="No corresponde" (click)="selectedVoteType = 'NO_EXISTE'"></button>
-                    <button pButton [outlined]="selectedVoteType !== 'IMPORTANTE'" severity="secondary" icon="pi pi-exclamation-circle" label="Es importante" (click)="selectedVoteType = 'IMPORTANTE'"></button>
-                  </div>
-                  <textarea pTextarea class="w-full" rows="3" [(ngModel)]="voteObservation" placeholder="Observación opcional"></textarea>
-                  <button pButton class="w-full justify-center" icon="pi pi-send" label="Enviar validación" (click)="submitVote(item)"></button>
-                </div>
-              } @else {
-                <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-                  Inicia sesión para validar este reporte.
-                  <a routerLink="/login" class="ml-1 font-semibold text-[var(--ca-teal)]">Ingresar</a>
-                </div>
-              }
-
-              @if (votosRecientes().length) {
-                <div class="mt-5 space-y-3">
-                  <p class="text-sm font-semibold">Validaciones recientes</p>
-                  @for (voto of votosRecientes().slice(0, 4); track voto.idVoto) {
-                    <div class="rounded-2xl bg-slate-50 p-3">
-                      <p class="text-sm font-semibold">{{ voto.aliasUsuario || 'Ciudadano' }} · {{ voteShortLabel(voto.tipoVoto) }}</p>
-                      @if (voto.observacion) {
-                        <p class="mt-1 text-sm text-slate-600">{{ voto.observacion }}</p>
-                      }
-                    </div>
-                  }
-                </div>
-              }
-            </p-card>
-
+            <!-- Confirmaciones de solución -->
             <p-card styleClass="border-0 shadow-sm">
               <ng-template pTemplate="header">
                 <div class="border-b border-slate-100 px-5 py-4">
@@ -341,25 +219,17 @@ import { citizenStatusOptions, isFinalCitizenIncident } from '../../../shared/ut
               </div>
             </p-card>
 
+            <!-- Comentarios recientes -->
             <p-card styleClass="border-0 shadow-sm">
               <ng-template pTemplate="header">
                 <div class="border-b border-slate-100 px-5 py-4">
-                  <h2 class="text-lg font-semibold">Ubicación</h2>
-                  <p class="mt-1 text-sm text-slate-500">{{ item.direccionReferencial || item.nombreSector || 'Cuenca' }}</p>
-                </div>
-              </ng-template>
-              <div id="incident-detail-map" class="h-64 overflow-hidden rounded-2xl"></div>
-            </p-card>
-
-            <p-card styleClass="border-0 shadow-sm">
-              <ng-template pTemplate="header">
-                <div class="border-b border-slate-100 px-5 py-4">
-                  <h2 class="text-lg font-semibold">Comentarios recientes</h2>
+                  <h2 class="text-lg font-semibold">Conversación ciudadana</h2>
+                  <p class="mt-1 text-sm text-slate-500">Comentarios y aportes de la comunidad.</p>
                 </div>
               </ng-template>
               @if (isLoggedIn()) {
                 <div class="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                  <textarea pTextarea class="w-full border-0 bg-transparent" rows="3" [(ngModel)]="nuevoComentario" placeholder="Aporta información útil para otros ciudadanos"></textarea>
+                  <textarea pTextarea class="w-full border-0 bg-transparent resize-none outline-none focus:ring-0 text-sm" rows="3" [(ngModel)]="nuevoComentario" placeholder="Aporta información útil para otros ciudadanos..."></textarea>
                   <div class="mt-3 flex justify-end">
                     <button pButton size="small" icon="pi pi-send" label="Comentar" [disabled]="!nuevoComentario.trim()" (click)="createComment(item)"></button>
                   </div>
@@ -367,35 +237,194 @@ import { citizenStatusOptions, isFinalCitizenIncident } from '../../../shared/ut
               } @else {
                 <div class="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
                   Inicia sesión para comentar o seguir este reporte.
-                  <a routerLink="/login" class="ml-1 font-semibold text-[var(--ca-teal)]">Ingresar</a>
+                  <a routerLink="/login" class="ml-1 font-semibold text-[var(--ca-teal)] hover:underline">Ingresar</a>
                 </div>
               }
-              <div class="space-y-3">
-                @for (comentario of comentarios().slice(0, 5); track comentario.idComentario) {
-                  <div class="rounded-2xl bg-slate-50 p-4">
+              <div class="space-y-4">
+                @for (comentario of comentarios(); track comentario.idComentario) {
+                  <div class="rounded-2xl bg-slate-50 p-4 border border-slate-100">
                     <div class="flex items-start justify-between gap-3">
-                      <p class="text-sm font-semibold">{{ comentario.aliasUsuario || 'Ciudadano' }}</p>
+                      <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ comentario.aliasUsuario || 'Ciudadano' }}</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">{{ comentario.creadoEn | date: 'medium' }}</p>
+                      </div>
                       <button pButton size="small" severity="danger" text icon="pi pi-flag" (click)="openReportDialog(comentario.idComentario, 'COMENTARIO')"></button>
                     </div>
-                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ comentario.contenido }}</p>
+                    <p class="mt-2 text-sm leading-6 text-slate-600 whitespace-pre-line">{{ comentario.contenido }}</p>
                   </div>
                 } @empty {
                   <p class="rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">Todavía no hay comentarios visibles.</p>
                 }
               </div>
             </p-card>
+          </div>
 
+          <!-- COLUMNA LATERAL (Derecha - Sidebar) -->
+          <aside class="space-y-6">
+            <!-- Gestionar Estado (Propietario) -->
+            @if (isOwner(item)) {
+              <p-card styleClass="border-0 bg-amber-50 shadow-sm ring-1 ring-amber-100">
+                <div class="flex gap-4">
+                  <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[var(--ca-gold)]/20 text-[var(--ca-gold)]">
+                    <i class="pi pi-sync"></i>
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <h2 class="text-lg font-semibold text-[var(--ca-navy)]">Gestionar estado</h2>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">Como propietario puedes actualizar el avance de tu reporte.</p>
+                    <button
+                      pButton
+                      class="mt-4 w-full justify-center"
+                      severity="secondary"
+                      outlined
+                      icon="pi pi-flag"
+                      label="Cambiar estado"
+                      [disabled]="isFinal(item) || availableStatusOptions(item).length === 0"
+                      (click)="openStatusDialog(item)"
+                    ></button>
+                  </div>
+                </div>
+              </p-card>
+            }
+
+            <!-- Participar -->
+            <p-card styleClass="border-0 shadow-sm">
+              <h2 class="text-lg font-semibold">Participar</h2>
+              <p class="mt-2 text-sm leading-6 text-slate-600">Ayuda a mantener actualizada la información de este reporte.</p>
+
+              <div class="mt-4 grid gap-2">
+                <button
+                  pButton
+                  [outlined]="!seguimiento()?.siguiendo"
+                  severity="secondary"
+                  icon="pi pi-bell"
+                  [label]="seguimiento()?.siguiendo ? 'Siguiendo' : 'Seguir reporte'"
+                  (click)="toggleFollow(item)"
+                ></button>
+                <button
+                  pButton
+                  outlined
+                  severity="secondary"
+                  icon="pi pi-check-circle"
+                  [label]="confirmaciones()?.usuarioYaConfirmo ? 'Ya notificaste completado' : 'Notificar como completado'"
+                  [disabled]="confirmaciones()?.usuarioYaConfirmo === true"
+                  (click)="openCompletionDialog()"
+                ></button>
+                <button pButton text severity="danger" icon="pi pi-flag" label="Denunciar contenido" (click)="openReportDialog(item.idIncidencia, 'INCIDENCIA')"></button>
+              </div>
+              @if (confirmaciones(); as resumenConfirmaciones) {
+                <div class="mt-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                  <span class="font-semibold text-[var(--ca-navy)]">{{ resumenConfirmaciones.totalConfirmaciones }}</span> confirmaciones de solución
+                </div>
+              }
+            </p-card>
+
+            <!-- Validación comunitaria -->
             <p-card styleClass="border-0 shadow-sm">
               <ng-template pTemplate="header">
                 <div class="border-b border-slate-100 px-5 py-4">
-                  <h2 class="text-lg font-semibold">Relacionadas</h2>
+                  <h2 class="text-lg font-semibold">Validación comunitaria</h2>
+                  <p class="mt-1 text-sm text-slate-500">Indica si este reporte existe, no corresponde o necesita prioridad.</p>
+                </div>
+              </ng-template>
+
+              <div class="grid grid-cols-3 gap-2">
+                <div class="rounded-2xl bg-emerald-50 p-3 text-center">
+                  <i class="pi pi-check-circle text-emerald-600"></i>
+                  <strong class="mt-1 block text-lg">{{ voteCount('CONFIRMA_EXISTENCIA') }}</strong>
+                  <span class="text-xs text-slate-500">Existe</span>
+                </div>
+                <div class="rounded-2xl bg-rose-50 p-3 text-center">
+                  <i class="pi pi-times-circle text-rose-600"></i>
+                  <strong class="mt-1 block text-lg">{{ voteCount('NO_EXISTE') }}</strong>
+                  <span class="text-xs text-slate-500">No corresponde</span>
+                </div>
+                <div class="rounded-2xl bg-amber-50 p-3 text-center">
+                  <i class="pi pi-exclamation-circle text-amber-600"></i>
+                  <strong class="mt-1 block text-lg">{{ voteCount('IMPORTANTE') }}</strong>
+                  <span class="text-xs text-slate-500">Importante</span>
+                </div>
+              </div>
+
+              @if (votos()?.usuarioYaVoto && votos()?.votoUsuario; as userVote) {
+                <div class="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                  <p class="font-semibold text-emerald-900">Ya validaste este reporte</p>
+                  <p class="mt-1 text-sm text-emerald-800">{{ voteRegisteredLabel(userVote.tipoVoto) }}</p>
+                  @if (userVote.observacion) {
+                    <p class="mt-2 text-sm text-slate-650">{{ userVote.observacion }}</p>
+                  }
+                </div>
+              } @else if (isLoggedIn()) {
+                <div class="mt-4 space-y-3">
+                  <div class="grid gap-2">
+                    <button pButton [outlined]="selectedVoteType !== 'CONFIRMA_EXISTENCIA'" severity="secondary" icon="pi pi-check-circle" label="Confirmo que existe" (click)="selectedVoteType = 'CONFIRMA_EXISTENCIA'"></button>
+                    <button pButton [outlined]="selectedVoteType !== 'NO_EXISTE'" severity="secondary" icon="pi pi-times-circle" label="No corresponde" (click)="selectedVoteType = 'NO_EXISTE'"></button>
+                    <button pButton [outlined]="selectedVoteType !== 'IMPORTANTE'" severity="secondary" icon="pi pi-exclamation-circle" label="Es importante" (click)="selectedVoteType = 'IMPORTANTE'"></button>
+                  </div>
+                  <textarea pTextarea class="w-full" rows="3" [(ngModel)]="voteObservation" placeholder="Observación opcional"></textarea>
+                  <button pButton class="w-full justify-center" icon="pi pi-send" label="Enviar validación" (click)="submitVote(item)"></button>
+                </div>
+              } @else {
+                <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                  Inicia sesión para validar este reporte.
+                  <a routerLink="/login" class="ml-1 font-semibold text-[var(--ca-teal)]">Ingresar</a>
+                </div>
+              }
+
+              @if (votosRecientes().length) {
+                <div class="mt-5 space-y-3 border-t border-slate-100 pt-4">
+                  <p class="text-sm font-semibold">Validaciones recientes</p>
+                  @for (voto of votosRecientes().slice(0, 4); track voto.idVoto) {
+                    <div class="rounded-xl bg-slate-50 p-3 border border-slate-100/50">
+                      <p class="text-xs font-semibold text-slate-800">{{ voto.aliasUsuario || 'Ciudadano' }} · {{ voteShortLabel(voto.tipoVoto) }}</p>
+                      @if (voto.observacion) {
+                        <p class="mt-1 text-xs text-slate-650">{{ voto.observacion }}</p>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </p-card>
+
+            <!-- Seguimiento (Historial de estados) -->
+            <p-card styleClass="border-0 shadow-sm">
+              <ng-template pTemplate="header">
+                <div class="border-b border-slate-100 px-5 py-4">
+                  <h2 class="text-lg font-semibold">Historial de cambios</h2>
+                  <p class="mt-1 text-sm text-slate-500">Seguimiento de estados del reporte.</p>
+                </div>
+              </ng-template>
+              <div class="space-y-4">
+                @for (itemHistorial of historial(); track itemHistorial.idHistorial) {
+                  <div class="flex gap-3">
+                    <span class="mt-1 h-2.5 w-2.5 rounded-full bg-[var(--ca-teal)] ring-4 ring-teal-50 shrink-0"></span>
+                    <div class="flex-1 border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
+                      <div class="flex flex-wrap items-center justify-between gap-1.5">
+                        <p class="font-bold text-xs text-slate-800">{{ itemHistorial.nombreEstadoNuevo }}</p>
+                        <span class="text-[10px] font-semibold text-slate-400">{{ itemHistorial.cambiadoEn | date: 'shortDate' }}</span>
+                      </div>
+                      @if (itemHistorial.observacion) {
+                        <p class="mt-1.5 text-xs leading-relaxed text-slate-655">{{ itemHistorial.observacion }}</p>
+                      }
+                    </div>
+                  </div>
+                } @empty {
+                  <p class="rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">Aún no hay historial para mostrar.</p>
+                }
+              </div>
+            </p-card>
+
+            <!-- Relacionadas -->
+            <p-card styleClass="border-0 shadow-sm">
+              <ng-template pTemplate="header">
+                <div class="border-b border-slate-100 px-5 py-4">
+                  <h2 class="text-lg font-semibold">Incidencias relacionadas</h2>
                 </div>
               </ng-template>
               <div class="space-y-3">
                 @for (relacionada of relacionadas(); track relacionada.idRelacion) {
                   <a [routerLink]="['/incidencias', relacionada.idIncidenciaRelacionada]" class="block rounded-2xl border border-slate-200 p-4 transition hover:border-[var(--ca-teal)] hover:bg-slate-50">
-                    <span class="block font-semibold">{{ relacionada.titulo }}</span>
-                    <span class="mt-1 block text-sm text-slate-500">{{ relacionada.nombreEstado }}</span>
+                    <span class="block font-semibold text-sm text-slate-800">{{ relacionada.titulo }}</span>
+                    <span class="mt-1 block text-xs text-slate-500">{{ relacionada.nombreEstado }}</span>
                   </a>
                 } @empty {
                   <p class="rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">No hay reportes relacionados.</p>
@@ -575,6 +604,54 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
   readonly incidencia = signal<Incidencia | null>(null);
   readonly relacionadas = signal<IncidenciaRelacionada[]>([]);
   readonly multimedia = signal<ArchivoMultimedia[]>([]);
+  private pollingTimer: any = null;
+  private pollingTicks = 0;
+
+  readonly reviewNotice = computed(() => {
+    const media = this.multimedia();
+    if (media.length === 0) return null;
+
+    const hasRejected = media.some((m) => m.estadoRevision === 'RECHAZADO');
+    const hasError = media.some((m) => m.estadoRevision === 'ERROR_REVISION');
+    const hasManual = media.some((m) => m.estadoRevision === 'REVISION_MANUAL');
+    const hasPending = media.some((m) => m.estadoRevision === 'PENDIENTE' || m.estadoRevision === 'PENDIENTE_REVISION');
+
+    if (hasRejected) {
+      return {
+        title: 'Algunas imágenes no fueron publicadas',
+        message: 'Una o más imágenes no se visualizarán porque el sistema detectó contenido que no cumple con las políticas de publicación.',
+        icon: 'pi pi-times-circle',
+        class: 'bg-red-50/50 border-red-200/60',
+        iconColor: 'text-red-600',
+      };
+    } else if (hasError) {
+      return {
+        title: 'No se pudo revisar la imagen',
+        message: 'Hubo un problema técnico al revisar una o más imágenes. El sistema intentará procesarlas nuevamente.',
+        icon: 'pi pi-exclamation-triangle',
+        class: 'bg-red-50/50 border-red-200/60',
+        iconColor: 'text-red-600',
+      };
+    } else if (hasManual) {
+      return {
+        title: 'Revisión manual pendiente',
+        message: 'Tus imágenes necesitan una revisión adicional antes de mostrarse públicamente. Esto puede pasar si el sistema no pudo confirmar completamente el contexto de la imagen.',
+        icon: 'pi pi-eye-slash',
+        class: 'bg-amber-50/50 border-amber-200/60',
+        iconColor: 'text-amber-600',
+      };
+    } else if (hasPending) {
+      return {
+        title: 'Imágenes en revisión',
+        message: 'Tus imágenes se están revisando automáticamente. En unos minutos se visualizarán si no contienen contenido sensible.',
+        icon: 'pi pi-clock',
+        class: 'bg-teal-50/50 border-teal-200/60',
+        iconColor: 'text-teal-600',
+      };
+    }
+
+    return null;
+  });
   readonly comentarios = signal<ComentarioIncidencia[]>([]);
   readonly historial = signal<HistorialEstadoIncidencia[]>([]);
   readonly estados = signal<EstadoIncidencia[]>([]);
@@ -629,7 +706,10 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
       this.renderMap();
     });
     this.incidenciasService.getRelacionadas(id).subscribe((items) => this.relacionadas.set(items));
-    this.incidenciasService.getMultimedia(id).subscribe((items) => this.multimedia.set(items));
+    this.incidenciasService.getMultimedia(id).subscribe((items) => {
+      this.multimedia.set(items);
+      this.checkAndStartPolling();
+    });
     this.incidenciasService.getComentarios(id).subscribe((items) => this.comentarios.set(items));
     this.incidenciasService.getHistorialEstados(id).subscribe((items) => this.historial.set(items));
     this.catalogosService.estados$.subscribe((items) => this.estados.set(items));
@@ -647,6 +727,42 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
   ngOnDestroy() {
     this.map?.remove();
     this.clearCompletionImage();
+    if (this.pollingTimer) {
+      clearInterval(this.pollingTimer);
+      this.pollingTimer = null;
+    }
+  }
+
+  checkAndStartPolling() {
+    const item = this.incidencia();
+    const isOwner = item ? this.isOwner(item) : false;
+    const media = this.multimedia();
+    const hasPending = media.some((m) => m.estadoRevision === 'PENDIENTE' || m.estadoRevision === 'PENDIENTE_REVISION');
+
+    if (isOwner && hasPending) {
+      if (!this.pollingTimer) {
+        this.pollingTicks = 0;
+        this.pollingTimer = setInterval(() => {
+          this.pollingTicks++;
+          if (this.pollingTicks >= 4) {
+            clearInterval(this.pollingTimer);
+            this.pollingTimer = null;
+          }
+          const id = this.incidencia()?.idIncidencia || this.route.snapshot.paramMap.get('id');
+          if (id) {
+            this.incidenciasService.getMultimedia(id).subscribe((items) => {
+              this.multimedia.set(items);
+              this.checkAndStartPolling();
+            });
+          }
+        }, 15000);
+      }
+    } else {
+      if (this.pollingTimer) {
+        clearInterval(this.pollingTimer);
+        this.pollingTimer = null;
+      }
+    }
   }
 
   principalImage(): ArchivoMultimedia | null {
@@ -654,11 +770,11 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
   }
 
   galleryImages(): ArchivoMultimedia[] {
-    return this.multimedia().filter((item) => item.downloadUrl && item.contentType?.startsWith('image/'));
+    return this.multimedia().filter((item) => item.downloadUrl && item.contentType?.startsWith('image/') && item.visiblePublicamente);
   }
 
   confirmationImages(confirmacion: ConfirmacionCompletadoDetalle): ArchivoMultimedia[] {
-    return confirmacion.multimedia.filter((item) => item.downloadUrl && item.contentType?.startsWith('image/'));
+    return confirmacion.multimedia.filter((item) => item.downloadUrl && item.contentType?.startsWith('image/') && item.visiblePublicamente);
   }
 
   galleryIndex(image: ArchivoMultimedia, images = this.galleryImages()): number {
