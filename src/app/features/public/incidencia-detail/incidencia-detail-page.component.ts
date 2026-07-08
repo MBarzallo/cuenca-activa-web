@@ -353,13 +353,43 @@ import { citizenStatusOptions, isFinalCitizenIncident } from '../../../shared/ut
                     <p class="mt-2 text-sm text-slate-650">{{ userVote.observacion }}</p>
                   }
                 </div>
-              } @else if (isLoggedIn()) {
-                <div class="mt-4 space-y-3">
-                  <div class="grid gap-2">
-                    <button pButton [outlined]="selectedVoteType !== 'CONFIRMA_EXISTENCIA'" severity="secondary" icon="pi pi-check-circle" label="Confirmo que existe" (click)="selectedVoteType = 'CONFIRMA_EXISTENCIA'"></button>
-                    <button pButton [outlined]="selectedVoteType !== 'NO_EXISTE'" severity="secondary" icon="pi pi-times-circle" label="No corresponde" (click)="selectedVoteType = 'NO_EXISTE'"></button>
-                    <button pButton [outlined]="selectedVoteType !== 'IMPORTANTE'" severity="secondary" icon="pi pi-exclamation-circle" label="Es importante" (click)="selectedVoteType = 'IMPORTANTE'"></button>
-                  </div>
+	              } @else if (isLoggedIn()) {
+	                <div class="mt-4 space-y-3">
+	                  <div class="grid gap-2" role="radiogroup" aria-label="Tipo de validación comunitaria">
+	                    <button
+	                      type="button"
+	                      role="radio"
+	                      [attr.aria-checked]="isVoteTypeSelected('CONFIRMA_EXISTENCIA')"
+	                      class="ca-vote-option"
+	                      [class.ca-vote-option-selected]="isVoteTypeSelected('CONFIRMA_EXISTENCIA')"
+	                      (click)="selectVoteType('CONFIRMA_EXISTENCIA')"
+	                    >
+	                      <i class="pi pi-check-circle text-emerald-600"></i>
+	                      <span>Confirmo que existe</span>
+	                    </button>
+	                    <button
+	                      type="button"
+	                      role="radio"
+	                      [attr.aria-checked]="isVoteTypeSelected('NO_EXISTE')"
+	                      class="ca-vote-option"
+	                      [class.ca-vote-option-selected]="isVoteTypeSelected('NO_EXISTE')"
+	                      (click)="selectVoteType('NO_EXISTE')"
+	                    >
+	                      <i class="pi pi-times-circle text-rose-600"></i>
+	                      <span>No corresponde</span>
+	                    </button>
+	                    <button
+	                      type="button"
+	                      role="radio"
+	                      [attr.aria-checked]="isVoteTypeSelected('IMPORTANTE')"
+	                      class="ca-vote-option"
+	                      [class.ca-vote-option-selected]="isVoteTypeSelected('IMPORTANTE')"
+	                      (click)="selectVoteType('IMPORTANTE')"
+	                    >
+	                      <i class="pi pi-exclamation-circle text-amber-600"></i>
+	                      <span>Es importante</span>
+	                    </button>
+	                  </div>
                   <textarea pTextarea class="w-full" rows="3" [(ngModel)]="voteObservation" placeholder="Observación opcional"></textarea>
                   <button pButton class="w-full justify-center" icon="pi pi-send" label="Enviar validación" (click)="submitVote(item)"></button>
                 </div>
@@ -599,6 +629,42 @@ import { citizenStatusOptions, isFinalCitizenIncident } from '../../../shared/ut
       </p-dialog>
     </main>
   `,
+  styles: [
+    `
+      .ca-vote-option {
+        align-items: center;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        color: #334155;
+        display: flex;
+        font-weight: 700;
+        gap: 0.65rem;
+        justify-content: flex-start;
+        min-height: 2.75rem;
+        padding: 0.75rem 0.9rem;
+        text-align: left;
+        transition:
+          background 0.15s ease,
+          border-color 0.15s ease,
+          box-shadow 0.15s ease,
+          color 0.15s ease;
+        width: 100%;
+      }
+
+      .ca-vote-option:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+      }
+
+      .ca-vote-option-selected {
+        background: #f0fdfa;
+        border-color: var(--ca-teal);
+        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.16);
+        color: #0f766e;
+      }
+    `,
+  ],
 })
 export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly incidencia = signal<Incidencia | null>(null);
@@ -686,6 +752,8 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
   readonly viewerTitle = signal('Imagen');
   private reporteEntidad: { id: string; tipo: string } | null = null;
   private map: L.Map | null = null;
+  private mapMarker: L.Marker | null = null;
+  private mapRenderFrame: number | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -703,7 +771,7 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
     }
     this.incidenciasService.getById(id).subscribe((item) => {
       this.incidencia.set(item);
-      this.renderMap();
+      this.scheduleMapRender();
     });
     this.incidenciasService.getRelacionadas(id).subscribe((items) => this.relacionadas.set(items));
     this.incidenciasService.getMultimedia(id).subscribe((items) => {
@@ -721,10 +789,14 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
   }
 
   ngAfterViewInit() {
-    this.renderMap();
+    this.scheduleMapRender();
   }
 
   ngOnDestroy() {
+    if (this.mapRenderFrame !== null) {
+      cancelAnimationFrame(this.mapRenderFrame);
+      this.mapRenderFrame = null;
+    }
     this.map?.remove();
     this.clearCompletionImage();
     if (this.pollingTimer) {
@@ -887,6 +959,14 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
     return this.votos()?.conteosPorTipo?.[tipo] ?? 0;
   }
 
+  selectVoteType(type: 'CONFIRMA_EXISTENCIA' | 'NO_EXISTE' | 'IMPORTANTE') {
+    this.selectedVoteType = type;
+  }
+
+  isVoteTypeSelected(type: string): boolean {
+    return this.selectedVoteType === type;
+  }
+
   toggleFollow(item: Incidencia) {
     if (!this.ensureLoggedIn()) {
       return;
@@ -979,9 +1059,16 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
             this.messages.add({ severity: 'success', summary: 'Confirmación registrada' });
             this.incidenciasService.getResumenConfirmaciones(item.idIncidencia).subscribe((resumen) => this.confirmaciones.set(resumen));
             this.incidenciasService.getConfirmaciones(item.idIncidencia).subscribe((items) => this.confirmacionesRecientes.set(items));
-          } catch (error) {
-            this.messages.add({ severity: 'warn', summary: 'Confirmación creada', detail: this.errorText(error) });
-          } finally {
+	          } catch (error) {
+	            this.completionDialogVisible = false;
+	            this.messages.add({
+	              severity: 'warn',
+	              summary: 'Confirmación creada sin imagen',
+	              detail: `Tu confirmación fue registrada, pero no pudimos adjuntar la imagen: ${this.errorText(error)}`,
+	            });
+	            this.incidenciasService.getResumenConfirmaciones(item.idIncidencia).subscribe((resumen) => this.confirmaciones.set(resumen));
+	            this.incidenciasService.getConfirmaciones(item.idIncidencia).subscribe((items) => this.confirmacionesRecientes.set(items));
+	          } finally {
             this.completionSubmitting = false;
           }
         },
@@ -1073,20 +1160,39 @@ export class IncidenciaDetailPageComponent implements OnInit, AfterViewInit, OnD
   private renderMap() {
     const item = this.incidencia();
     const container = document.getElementById('incident-detail-map');
-    if (!item || !container || !Number.isFinite(item.latitud) || !Number.isFinite(item.longitud)) {
+    const latitud = Number(item?.latitud);
+    const longitud = Number(item?.longitud);
+
+    if (!item || !container || !Number.isFinite(latitud) || !Number.isFinite(longitud)) {
       return;
     }
 
+    const position: L.LatLngExpression = [latitud, longitud];
+
     if (!this.map) {
-      this.map = L.map(container).setView([item.latitud, item.longitud], 15);
+      this.map = L.map(container).setView(position, 15);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap',
       }).addTo(this.map);
     } else {
-      this.map.setView([item.latitud, item.longitud], 15);
+      this.map.setView(position, 15);
     }
 
-    L.marker([item.latitud, item.longitud], { icon: this.getDetailMarkerIcon(item.codigoEstado) }).addTo(this.map).bindPopup(item.titulo);
+    this.mapMarker?.remove();
+    this.mapMarker = L.marker(position, { icon: this.getDetailMarkerIcon(item.codigoEstado) }).addTo(this.map).bindPopup(item.titulo);
+
+    setTimeout(() => this.map?.invalidateSize(), 0);
+  }
+
+  private scheduleMapRender() {
+    if (this.mapRenderFrame !== null) {
+      cancelAnimationFrame(this.mapRenderFrame);
+    }
+
+    this.mapRenderFrame = requestAnimationFrame(() => {
+      this.mapRenderFrame = null;
+      this.renderMap();
+    });
   }
 
   private getDetailMarkerIcon(codigoEstado: string): L.DivIcon {

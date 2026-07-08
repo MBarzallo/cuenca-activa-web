@@ -437,10 +437,14 @@ export class ReportIncidentPageComponent implements OnInit, AfterViewInit, OnDes
           await this.incidenciasService.uploadIncidentEvidence(incidencia.idIncidencia, image);
         } catch (error) {
           this.messageService.add({
-            severity: 'warn',
-            summary: 'Reporte creado',
-            detail: error instanceof Error ? error.message : 'No se pudo subir la imagen adjunta.',
+            severity: 'error',
+            summary: 'Reporte creado sin imagen',
+            detail: error instanceof Error
+              ? `Tu reporte fue creado, pero no pudimos subir la imagen: ${error.message}`
+              : 'Tu reporte fue creado, pero no pudimos subir la imagen adjunta.',
           });
+          await this.router.navigate(['/incidencias', incidencia.idIncidencia]);
+          return;
         }
       }
 

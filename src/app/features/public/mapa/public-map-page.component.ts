@@ -7,13 +7,13 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { MessageService } from 'primeng/api';
-import * as L from 'leaflet';
-import 'leaflet.markercluster';
+
 import { CategoriaIncidencia, EstadoIncidencia } from '../../../core/models/catalogo.model';
 import { Incidencia, IncidenciaCercana } from '../../../core/models/incidencia.model';
 import { CatalogosService } from '../../../core/services/catalogos.service';
 import { IncidenciasService } from '../../../core/services/incidencias.service';
 
+declare const L: any;
 @Component({
   selector: 'app-public-map-page',
   standalone: true,
@@ -228,7 +228,7 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
     { label: '10 km', value: 10 },
   ];
   private map: L.Map | null = null;
-  private markers: L.MarkerClusterGroup | null = null;
+  private markers: any = null;
   private userMarker: L.Marker | null = null;
   private userCircle: L.Circle | null = null;
 
@@ -237,7 +237,7 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly isMobile = signal(false);
 
   constructor(
-    private readonly incidenciasService: IncidenciasService,
+    private readonly incidenciasService: IncidenciasService, 
     private readonly catalogosService: CatalogosService,
     private readonly messages: MessageService,
   ) {}

@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
 
-  apiUrl: 'http://localhost:8080',
+  apiUrl: 'https://api.cuencaactiva.com',
 
   firebase: {
   apiKey: "AIzaSyAy603MXD9ukqFGt1Ik6tgzeP4_43qqdMY",
