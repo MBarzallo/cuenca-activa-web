@@ -13,10 +13,10 @@ import { AuthSessionService } from '../auth/auth-session.service';
     <p-toast></p-toast>
     <p-confirmDialog></p-confirmDialog>
 
-    <div class="min-h-screen bg-[#EEF2F6] text-[var(--ca-navy)] lg:grid lg:grid-cols-[292px_1fr]">
-      <aside class="sticky top-0 z-40 flex h-auto flex-col border-r border-white/10 bg-[var(--ca-navy)] text-white lg:h-screen">
+    <div class="min-h-[100dvh] bg-[var(--ca-bg)] text-[var(--ca-navy)] lg:grid lg:grid-cols-[292px_1fr]">
+      <aside class="sticky top-0 z-40 flex h-auto flex-col border-r border-white/10 bg-[var(--ca-navy)] text-white lg:h-[100dvh]">
         <div class="px-5 pb-4 pt-5">
-          <a routerLink="/admin" class="flex items-center gap-3 rounded-2xl bg-white/5 p-3 ring-1 ring-white/10">
+          <a routerLink="/admin" class="flex items-center gap-3 rounded-[var(--ca-radius-lg)] bg-white/5 p-3 ring-1 ring-white/10 transition hover:bg-white/10">
             <img src="/logo/icon_only_white.png" class="h-12 w-12 object-contain" alt="CA Logo" />
             <span>
               <span class="block text-base font-semibold leading-5">CuencaActiva</span>
@@ -53,7 +53,7 @@ import { AuthSessionService } from '../auth/auth-session.service';
         </nav>
 
         <div class="hidden px-4 pb-5 lg:block">
-          <div class="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+          <div class="rounded-[var(--ca-radius-lg)] border border-white/10 bg-white/[0.06] p-4">
             <p class="text-xs font-semibold uppercase tracking-wide text-[var(--ca-gold)]">Sesión activa</p>
             <p class="mt-2 truncate text-sm font-semibold">{{ userLabel() }}</p>
             <p class="mt-1 text-xs text-slate-300">{{ rolesLabel() }}</p>
@@ -65,7 +65,7 @@ import { AuthSessionService } from '../auth/auth-session.service';
         <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 px-4 py-3 shadow-sm backdrop-blur sm:px-6">
           <div class="flex items-center justify-between gap-4">
             <div class="min-w-0">
-              <p class="text-xs font-bold uppercase tracking-[0.18em] text-[var(--ca-teal)]">Panel interno</p>
+              <p class="text-xs font-bold uppercase tracking-[0.12em] text-[var(--ca-teal)]">Panel interno</p>
               <h1 class="truncate text-xl font-semibold">Administración de incidencias ciudadanas</h1>
             </div>
             <div class="flex items-center gap-2">
@@ -89,7 +89,7 @@ export class AdminLayoutComponent {
     const user = this.session.user();
     return user?.aliasPublico || user?.email || 'Usuario';
   });
-  readonly rolesLabel = computed(() => this.session.user()?.roles?.join(' · ') || 'Sin roles');
+  readonly rolesLabel = computed(() => this.session.user()?.roles?.join(', ') || 'Sin roles');
 
   async logout() {
     await this.session.logout();

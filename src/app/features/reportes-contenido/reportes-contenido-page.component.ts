@@ -31,7 +31,7 @@ import { AdminReporteContenido } from '../../core/models/admin-reporte-contenido
   template: `
     <div class="space-y-6">
       <p-toast></p-toast>
-      <section class="rounded-[28px] bg-[var(--ca-navy)] p-6 text-white shadow-xl shadow-slate-900/10 sm:p-8">
+      <section class="rounded-[var(--ca-radius-xl)] bg-[var(--ca-navy)] p-6 text-white shadow-[0_16px_42px_rgba(17,24,39,0.10)] shadow-slate-900/10 sm:p-8">
         <p class="text-sm font-bold uppercase tracking-[0.18em] text-[var(--ca-gold)]">Moderación</p>
         <h2 class="mt-3 text-3xl font-semibold sm:text-4xl">Reportes de Contenido</h2>
         <p class="mt-3 max-w-3xl leading-7 text-slate-300">
@@ -39,9 +39,9 @@ import { AdminReporteContenido } from '../../core/models/admin-reporte-contenido
         </p>
       </section>
 
-      <div class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+      <div class="ca-panel p-6">
         <!-- Filtros de búsqueda -->
-        <div class="mb-6 bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
+        <div class="mb-6 bg-slate-50 p-5 rounded-[var(--ca-radius)] border border-slate-100 space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Buscar -->
             <div class="flex flex-col gap-1.5">
@@ -225,7 +225,7 @@ import { AdminReporteContenido } from '../../core/models/admin-reporte-contenido
       <div class="fixed inset-0 z-[1000] bg-slate-900/40 backdrop-blur-xs" (click)="closeDetailDrawer()"></div>
       
       <!-- Drawer Container -->
-      <div class="fixed inset-y-0 right-0 z-[1001] w-full max-w-xl bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300">
+      <div class="fixed inset-y-0 right-0 z-[1001] flex h-full w-full max-w-xl transform flex-col bg-white shadow-[0_20px_60px_rgba(17,24,39,0.18)] transition-transform duration-300">
         <!-- Header -->
         <div class="bg-[var(--ca-navy)] text-white p-6 flex items-center justify-between shrink-0">
           <div>
@@ -240,7 +240,7 @@ import { AdminReporteContenido } from '../../core/models/admin-reporte-contenido
         <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto p-6 space-y-6">
           <!-- Estado y Fecha -->
-          <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+          <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-[var(--ca-radius)] border border-slate-100">
             <div>
               <span class="block text-xs font-semibold text-slate-400 uppercase">Estado</span>
               <p-tag [value]="reporte.estadoRevision" [severity]="obtenerSeverityEstado(reporte.estadoRevision)" class="mt-1.5 block w-fit"></p-tag>
@@ -254,7 +254,7 @@ import { AdminReporteContenido } from '../../core/models/admin-reporte-contenido
           <!-- Denunciante -->
           <div class="space-y-2">
             <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Denunciante</h4>
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 flex items-center gap-3">
+            <div class="bg-white border border-slate-200 rounded-[var(--ca-radius)] p-4 flex items-center gap-3">
               <span class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-500 font-bold text-sm">
                 {{ reporte.aliasUsuarioReporta ? reporte.aliasUsuarioReporta.slice(0, 2).toUpperCase() : 'US' }}
               </span>
@@ -268,7 +268,7 @@ import { AdminReporteContenido } from '../../core/models/admin-reporte-contenido
           <!-- Motivo y Detalles -->
           <div class="space-y-2">
             <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Motivo de Denuncia</h4>
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+            <div class="bg-white border border-slate-200 rounded-[var(--ca-radius)] p-4 space-y-3">
               <div>
                 <span class="text-xs font-bold text-slate-400 block uppercase">Motivo</span>
                 <span class="text-sm font-semibold text-slate-850 mt-1 block">{{ reporte.motivo }}</span>
@@ -288,7 +288,7 @@ import { AdminReporteContenido } from '../../core/models/admin-reporte-contenido
           <div class="space-y-3">
             <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Contenido Reportado</h4>
             
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
+            <div class="bg-white border border-slate-200 rounded-[var(--ca-radius)] p-5 space-y-4 shadow-sm">
               <div class="flex items-center justify-between">
                 <div>
                   <span class="text-xs font-bold text-slate-400 block uppercase">Tipo de Recurso</span>
@@ -451,7 +451,7 @@ import { AdminReporteContenido } from '../../core/models/admin-reporte-contenido
     <!-- CONFIRMATION MODAL -->
     @if (showConfirmModal()) {
       <div class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-        <div class="w-full max-w-md bg-white rounded-3xl border border-slate-200 p-6 shadow-2xl space-y-4">
+        <div class="w-full max-w-md bg-white rounded-[var(--ca-radius-lg)] border border-slate-200 p-6 shadow-[0_20px_60px_rgba(17,24,39,0.18)] space-y-4">
           <div class="flex items-center gap-3">
             <span class="grid h-10 w-10 place-items-center rounded-full bg-red-50 text-red-655 shrink-0">
               <i class="pi pi-exclamation-triangle text-lg"></i>

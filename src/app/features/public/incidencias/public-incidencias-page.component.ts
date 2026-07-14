@@ -17,9 +17,9 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
   standalone: true,
   imports: [RouterLink, FormsModule, ButtonModule, CardModule, InputTextModule, SelectModule, TableModule, TagModule],
   template: `
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main class="ca-page-shell">
       <!-- PAGE HEADER: Light, semantic, and modern -->
-      <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header class="ca-page-header">
         <div>
           <span class="text-xs font-bold uppercase tracking-wider text-[var(--ca-teal)]">Reportes comunitarios</span>
           <h1 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Incidencias públicas</h1>
@@ -32,7 +32,7 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
       </header>
 
       <!-- FILTER BAR: Compact and functional -->
-      <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="ca-filter-panel mb-6">
         <div class="grid gap-4 md:grid-cols-[1fr_250px_120px] md:items-end">
           <div class="space-y-1.5">
             <span class="text-xs font-semibold text-slate-500">Buscar reporte</span>
@@ -102,7 +102,7 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
                 </div>
               </article>
             } @empty {
-              <div class="col-span-full py-16 text-center bg-white rounded-2xl border border-slate-200 shadow-xs">
+              <div class="ca-empty-state col-span-full">
                 <i class="pi pi-inbox text-slate-300 text-4xl"></i>
                 <p class="mt-3 font-bold text-slate-700">No se encontraron reportes</p>
                 <p class="mt-1 text-xs text-slate-500">Prueba ajustando los filtros o buscando otro término.</p>
@@ -124,7 +124,7 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
 
         <aside class="space-y-6">
           <!-- Location CTA Card: Light and clean -->
-          <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-6">
+          <div class="ca-panel bg-slate-50/70 p-6">
             <i class="pi pi-map text-xl text-[var(--ca-teal)]"></i>
             <h2 class="mt-3 text-base font-bold text-slate-800">Explora por ubicación</h2>
             <p class="mt-2 text-sm leading-relaxed text-slate-500">Usa el mapa interactivo para ver incidencias en tu vecindario o cercanas a tu ubicación actual.</p>
@@ -132,7 +132,7 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
           </div>
 
           <!-- Participate CTA Card: Light and clean -->
-          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="ca-panel p-6">
             <i class="pi pi-users text-xl text-[var(--ca-teal)]"></i>
             <h2 class="mt-3 text-base font-bold text-slate-800">Participa del cambio</h2>
             <p class="mt-2 text-sm leading-relaxed text-slate-500">Desde tu cuenta ciudadana puedes reportar problemas, comentar con detalles o confirmar soluciones.</p>

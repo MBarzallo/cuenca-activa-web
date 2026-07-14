@@ -20,9 +20,9 @@ import { firebaseAuth } from '../../../core/firebase/firebase.client';
   standalone: true,
   imports: [ReactiveFormsModule, FormsModule, RouterLink, DatePipe, ButtonModule, CardModule, InputTextModule, TagModule],
   template: `
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main class="ca-page-shell">
       <!-- PAGE HEADER: Light and personal -->
-      <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header class="ca-page-header">
         <div>
           <span class="text-xs font-bold uppercase tracking-wider text-[var(--ca-teal)]">Zona ciudadana</span>
           <h1 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Ajustes de mi cuenta</h1>
@@ -37,7 +37,7 @@ import { firebaseAuth } from '../../../core/firebase/firebase.client';
         <section class="grid gap-8 xl:grid-cols-[340px_minmax(0,1fr)]">
           <aside class="space-y-6">
             <!-- AVATAR & BASIC DETAILS -->
-            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="ca-panel p-6">
               <div class="flex flex-col items-center text-center">
                 <div class="relative">
                   <span class="grid h-32 w-32 place-items-center overflow-hidden rounded-[2rem] bg-slate-900 text-4xl font-black text-[var(--ca-gold)] ring-4 ring-slate-100">
@@ -75,7 +75,7 @@ import { firebaseAuth } from '../../../core/firebase/firebase.client';
             </div>
 
             <!-- LEVEL & POINTS -->
-            <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-6">
+            <div class="ca-panel bg-slate-50/70 p-6">
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Puntos acumulados</span>
@@ -103,7 +103,7 @@ import { firebaseAuth } from '../../../core/firebase/firebase.client';
 
           <section class="space-y-6">
             <!-- PROFILE DATA FORM -->
-            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="ca-panel p-6">
               <div class="border-b border-slate-100 pb-4 mb-6">
                 <h2 class="text-lg font-bold text-slate-800">Datos del ciudadano</h2>
                 <p class="mt-1 text-sm text-slate-500">Gestiona la información con la que interactúas en la plataforma.</p>
@@ -208,7 +208,7 @@ import { firebaseAuth } from '../../../core/firebase/firebase.client';
             </div>
 
             <!-- POINTS MOVEMENTS -->
-            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="ca-panel p-6">
               <div class="flex flex-col gap-3 border-b border-slate-100 pb-4 mb-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 class="text-lg font-bold text-slate-800">Movimientos de puntos</h2>

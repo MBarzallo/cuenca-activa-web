@@ -14,15 +14,10 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, ButtonModule, CardModule, InputTextModule, PasswordModule, MessageModule],
   template: `
-    <main class="min-h-screen w-full bg-white">
-      <div class="grid min-h-screen w-full lg:grid-cols-2">
+    <main class="ca-auth-page">
+      <div class="ca-auth-grid">
 
-        <!-- Panel visual (Left) -->
-        <aside class="relative hidden flex-col justify-between overflow-hidden bg-[var(--ca-navy)] p-12 text-white lg:flex">
-          <div class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[var(--ca-teal)]/25 blur-3xl"></div>
-          <div class="absolute -bottom-20 left-10 h-64 w-64 rounded-full bg-[var(--ca-gold)]/20 blur-3xl"></div>
-
-          <!-- Header / Logo -->
+        <aside class="ca-auth-aside">
           <div class="relative">
             <a routerLink="/" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
               <img src="/logo/icon_only_white.png" class="h-14 w-14 object-contain" alt="CA Logo" />
@@ -33,17 +28,16 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
             </a>
 
             <div class="mt-24 max-w-md">
-              <p class="text-sm font-bold uppercase tracking-[0.28em] text-[var(--ca-teal)]">Nueva cuenta</p>
+              <p class="ca-kicker text-[var(--ca-teal)]">Nueva cuenta</p>
               <h1 class="mt-5 text-4xl font-black leading-tight tracking-tight xl:text-5xl">Participa con una cuenta ciudadana.</h1>
               <p class="mt-6 text-base leading-8 text-slate-300">Crea tu perfil para reportar incidencias, comentar, validar información y seguir el avance de tus reportes.</p>
             </div>
           </div>
 
-          <!-- Beneficios -->
           <div class="relative grid gap-4">
             <div class="grid grid-cols-2 gap-4">
-              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
-                <div class="mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-[var(--ca-teal)]/20 text-[var(--ca-teal)]">
+              <div class="ca-auth-benefit">
+                <div class="ca-auth-benefit-icon bg-[var(--ca-teal)]/20 text-[var(--ca-teal)]">
                   <i class="pi pi-map-marker"></i>
                 </div>
                 <p class="text-sm font-bold">Reportes cercanos</p>
@@ -52,8 +46,8 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                 </p>
               </div>
 
-              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
-                <div class="mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-[var(--ca-gold)]/20 text-[var(--ca-gold)]">
+              <div class="ca-auth-benefit">
+                <div class="ca-auth-benefit-icon bg-[var(--ca-gold)]/20 text-[var(--ca-gold)]">
                   <i class="pi pi-comments"></i>
                 </div>
                 <p class="text-sm font-bold">Participación útil</p>
@@ -63,7 +57,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
               </div>
             </div>
 
-            <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+            <div class="ca-auth-benefit">
               <div class="flex items-center justify-between gap-4">
                 <div>
                   <p class="text-sm font-bold text-white">Plataforma comunitaria</p>
@@ -72,7 +66,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                   </p>
                 </div>
 
-                <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white text-[var(--ca-navy)]">
+                <div class="grid h-12 w-12 place-items-center rounded-[var(--ca-radius)] bg-white text-[var(--ca-navy)]">
                   <i class="pi pi-shield"></i>
                 </div>
               </div>
@@ -80,10 +74,8 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
           </div>
         </aside>
 
-        <!-- Formulario (Right) -->
-        <section class="flex min-h-screen items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-16">
-          <div class="w-full max-w-[560px]">
-            <!-- Header móvil -->
+        <section class="flex min-h-[100dvh] items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-16">
+          <div class="ca-auth-card w-full max-w-[580px]">
             <div class="mb-10 lg:hidden">
               <a routerLink="/" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
                 <img src="/logo/icon_only.png" class="h-14 w-14 object-contain" alt="CA Logo" />
@@ -96,7 +88,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
             </div>
 
             <div class="mb-8">
-              <p class="text-sm font-black uppercase tracking-[0.24em] text-[var(--ca-teal)]">Registro ciudadano</p>
+              <p class="ca-kicker">Registro ciudadano</p>
               <h2 class="mt-4 text-4xl font-black tracking-tight text-[var(--ca-navy)]">Crear cuenta</h2>
               <p class="mt-4 text-base leading-7 text-slate-600">Completa tus datos para empezar a participar en CuencaActiva.</p>
             </div>
@@ -109,14 +101,14 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
               <div class="grid gap-5 md:grid-cols-2">
                 <label class="block">
                   <span class="mb-2 block text-sm font-bold text-slate-700">Nombres</span>
-                  <input pInputText class="h-12 w-full rounded-2xl" formControlName="nombres" maxlength="100" autocomplete="given-name" />
+                  <input pInputText class="h-12 w-full" formControlName="nombres" maxlength="100" autocomplete="given-name" />
                   @if (controlInvalid('nombres')) {
                     <small class="mt-2 block text-red-600">Ingresa tus nombres.</small>
                   }
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-bold text-slate-700">Apellidos</span>
-                  <input pInputText class="h-12 w-full rounded-2xl" formControlName="apellidos" maxlength="100" autocomplete="family-name" />
+                  <input pInputText class="h-12 w-full" formControlName="apellidos" maxlength="100" autocomplete="family-name" />
                   @if (controlInvalid('apellidos')) {
                     <small class="mt-2 block text-red-600">Ingresa tus apellidos.</small>
                   }
@@ -128,7 +120,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                   <span class="mb-2 block text-sm font-bold text-slate-700">Alias público</span>
                   <span class="p-input-icon-left w-full">
                     <i class="pi pi-at text-slate-400"></i>
-                    <input pInputText class="h-12 w-full rounded-2xl" formControlName="aliasPublico" maxlength="50" autocomplete="nickname" />
+                    <input pInputText class="h-12 w-full" formControlName="aliasPublico" maxlength="50" autocomplete="nickname" />
                   </span>
                   @if (controlInvalid('aliasPublico')) {
                     <small class="mt-2 block text-red-600">Usa 3 a 50 caracteres: letras, números, puntos, guiones o guion bajo.</small>
@@ -136,7 +128,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-bold text-slate-700">Teléfono</span>
-                  <input pInputText class="h-12 w-full rounded-2xl" formControlName="telefono" maxlength="20" autocomplete="tel" />
+                  <input pInputText class="h-12 w-full" formControlName="telefono" maxlength="20" autocomplete="tel" />
                 </label>
               </div>
 
@@ -144,7 +136,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                 <span class="mb-2 block text-sm font-bold text-slate-700">Correo electrónico</span>
                 <span class="p-input-icon-left w-full">
                   <i class="pi pi-envelope text-slate-400"></i>
-                  <input pInputText class="h-12 w-full rounded-2xl" type="email" formControlName="email" autocomplete="email" placeholder="usuario@correo.com" />
+                  <input pInputText class="h-12 w-full" type="email" formControlName="email" autocomplete="email" placeholder="usuario@correo.com" />
                 </span>
                 @if (controlInvalid('email')) {
                   <small class="mt-2 block text-red-600">Ingresa un correo válido.</small>
@@ -155,7 +147,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                 <span class="mb-2 block text-sm font-bold text-slate-700">Contraseña</span>
                 <p-password
                   styleClass="w-full"
-                  inputStyleClass="h-12 w-full rounded-2xl"
+                  inputStyleClass="h-12 w-full"
                   formControlName="password"
                   [feedback]="false"
                   [toggleMask]="true"
@@ -168,7 +160,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
 
               <button
                 pButton
-                class="mt-2 h-12 w-full justify-center rounded-2xl border-0 bg-[var(--ca-teal)] text-base font-bold text-white"
+                class="mt-2 h-12 w-full justify-center border-0 text-base font-bold"
                 type="submit"
                 icon="pi pi-user-plus"
                 label="Crear cuenta"
@@ -177,7 +169,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
               ></button>
             </form>
 
-            <div class="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-600">
+            <div class="mt-6 rounded-[var(--ca-radius-lg)] border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-600">
               ¿Ya tienes cuenta?
               <a routerLink="/login" class="font-semibold text-[var(--ca-teal)]">Inicia sesión</a>
             </div>

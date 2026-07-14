@@ -11,7 +11,7 @@ import { CatalogosService } from '../../core/services/catalogos.service';
   template: `
     <div class="space-y-6">
       <!-- Compact Admin Header -->
-      <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="bg-white p-6 rounded-[var(--ca-radius-lg)] border border-slate-100 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <span class="text-xs font-bold uppercase tracking-[0.15em] text-[var(--ca-teal)] block">Catálogos y Reglas</span>
           <h2 class="text-2xl font-bold text-[var(--ca-navy)] mt-1">Diccionarios y Parámetros del Sistema</h2>

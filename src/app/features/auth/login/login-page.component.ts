@@ -14,15 +14,10 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, ButtonModule, CardModule, InputTextModule, PasswordModule, MessageModule],
   template: `
-    <main class="min-h-screen w-full bg-white">
-      <div class="grid min-h-screen w-full lg:grid-cols-2">
+    <main class="ca-auth-page">
+      <div class="ca-auth-grid">
 
-        <!-- Panel visual (Left) -->
-        <aside class="relative hidden flex-col justify-between overflow-hidden bg-[#0F172A] p-12 text-white lg:flex">
-          <div class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#14B8A6]/25 blur-3xl"></div>
-          <div class="absolute -bottom-20 left-10 h-64 w-64 rounded-full bg-[#D4A937]/20 blur-3xl"></div>
-
-          <!-- Header / Logo -->
+        <aside class="ca-auth-aside">
           <div class="relative">
             <a routerLink="/" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
               <img src="/logo/icon_only_white.png" class="h-14 w-14 object-contain" alt="CA Logo" />
@@ -33,10 +28,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
             </a>
 
             <div class="mt-24 max-w-md">
-              <p class="text-sm font-bold uppercase tracking-[0.28em] text-[#14B8A6]">
-                Acceso ciudadano
-              </p>
-
+              <p class="ca-kicker text-[var(--ca-teal)]">Acceso ciudadano</p>
               <h1 class="mt-5 text-4xl font-black leading-tight tracking-tight xl:text-5xl">
                 Conoce, reporta y da seguimiento a lo que ocurre en Cuenca.
               </h1>
@@ -47,11 +39,10 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
             </div>
           </div>
 
-          <!-- Beneficios -->
           <div class="relative grid gap-4">
             <div class="grid grid-cols-2 gap-4">
-              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
-                <div class="mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-[#14B8A6]/20 text-[#14B8A6]">
+              <div class="ca-auth-benefit">
+                <div class="ca-auth-benefit-icon bg-[#14B8A6]/20 text-[#14B8A6]">
                   <i class="pi pi-map-marker"></i>
                 </div>
                 <p class="text-sm font-bold">Reportes cercanos</p>
@@ -60,8 +51,8 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                 </p>
               </div>
 
-              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
-                <div class="mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-[#D4A937]/20 text-[#D4A937]">
+              <div class="ca-auth-benefit">
+                <div class="ca-auth-benefit-icon bg-[#D4A937]/20 text-[#D4A937]">
                   <i class="pi pi-comments"></i>
                 </div>
                 <p class="text-sm font-bold">Participación útil</p>
@@ -71,7 +62,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
               </div>
             </div>
 
-            <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+            <div class="ca-auth-benefit">
               <div class="flex items-center justify-between gap-4">
                 <div>
                   <p class="text-sm font-bold text-white">Plataforma comunitaria</p>
@@ -80,7 +71,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                   </p>
                 </div>
 
-                <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white text-[#0F172A]">
+                <div class="grid h-12 w-12 place-items-center rounded-[var(--ca-radius)] bg-white text-[#0F172A]">
                   <i class="pi pi-shield"></i>
                 </div>
               </div>
@@ -88,10 +79,8 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
           </div>
         </aside>
 
-        <!-- Formulario (Right) -->
-        <section class="flex min-h-screen items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-16">
-          <div class="w-full max-w-[420px]">
-            <!-- Header móvil -->
+        <section class="flex min-h-[100dvh] items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-16">
+          <div class="ca-auth-card w-full max-w-[440px]">
             <div class="mb-10 lg:hidden">
               <a routerLink="/" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
                 <img src="/logo/icon_only.png" class="h-14 w-14 object-contain" alt="CA Logo" />
@@ -104,9 +93,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
             </div>
 
             <div class="mb-8">
-              <p class="text-sm font-black uppercase tracking-[0.24em] text-[#14B8A6]">
-                Iniciar sesión
-              </p>
+              <p class="ca-kicker">Iniciar sesión</p>
 
               <h2 class="mt-4 text-4xl font-black tracking-tight text-[#0F172A]">
                 Entra a tu cuenta
@@ -135,7 +122,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                   <i class="pi pi-envelope text-slate-400"></i>
                   <input
                     pInputText
-                    class="h-12 w-full rounded-2xl"
+                    class="h-12 w-full"
                     type="email"
                     formControlName="email"
                     autocomplete="email"
@@ -150,7 +137,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
 
                 <p-password
                   styleClass="w-full"
-                  inputStyleClass="h-12 w-full rounded-2xl"
+                  inputStyleClass="h-12 w-full"
                   formControlName="password"
                   [feedback]="false"
                   [toggleMask]="true"
@@ -163,7 +150,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
 
               <button
                 pButton
-                class="mt-2 h-12 w-full justify-center rounded-2xl border-0 bg-[#14B8A6] text-base font-bold text-white hover:bg-[#0F9F91]"
+                class="mt-2 h-12 w-full justify-center border-0 text-base font-bold"
                 type="submit"
                 icon="pi pi-sign-in"
                 label="Ingresar"
@@ -172,9 +159,9 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
               </button>
             </form>
 
-            <div class="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+            <div class="mt-8 rounded-[var(--ca-radius-lg)] border border-slate-200 bg-slate-50 p-5">
               <div class="flex gap-3">
-                <div class="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#D4A937]/15 text-[#D4A937]">
+                <div class="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--ca-radius)] bg-[#D4A937]/15 text-[#D4A937]">
                   <i class="pi pi-info-circle"></i>
                 </div>
 

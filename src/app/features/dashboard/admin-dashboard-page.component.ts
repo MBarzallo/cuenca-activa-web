@@ -23,9 +23,9 @@ type PeriodOption = '7d' | '30d' | 'month' | 'custom';
   imports: [CommonModule, FormsModule, RouterLink, ButtonModule, CardModule, SelectModule, TableModule, TagModule],
   template: `
     <div class="space-y-6">
-      <header class="flex flex-col gap-4 border-b border-slate-100 pb-5 xl:flex-row xl:items-end xl:justify-between">
+      <header class="ca-page-header border-b border-slate-100 pb-5">
         <div>
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Analítica administrativa</span>
+          <span class="ca-kicker text-slate-500">Analítica administrativa</span>
           <h1 class="mt-0.5 text-3xl font-extrabold tracking-tight text-slate-900">Dashboard analítico</h1>
           <p class="mt-1 text-sm text-slate-500">Indicadores y tendencias de incidencias ciudadanas para supervisión operativa.</p>
         </div>
@@ -35,7 +35,7 @@ type PeriodOption = '7d' | '30d' | 'month' | 'custom';
         </div>
       </header>
 
-      <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <section class="ca-filter-panel">
         <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
           <label class="space-y-1.5">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Periodo</span>
@@ -96,7 +96,7 @@ type PeriodOption = '7d' | '30d' | 'month' | 'custom';
       @if (dashboard(); as data) {
         <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <ng-container *ngFor="let kpi of kpis(data)">
-            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="ca-panel p-5">
               <div class="flex items-start justify-between gap-3">
                 <div>
                   <span class="text-xs font-bold uppercase tracking-wider text-slate-400">{{ kpi.label }}</span>
@@ -110,7 +110,7 @@ type PeriodOption = '7d' | '30d' | 'month' | 'custom';
         </section>
 
         <section class="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-          <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <article class="ca-panel p-5">
             <div class="mb-4 border-b border-slate-100 pb-3">
               <h2 class="text-sm font-bold text-slate-850">Tendencia de reportes</h2>
               <p class="text-xs text-slate-400">Incidencias creadas agrupadas por día.</p>
@@ -118,7 +118,7 @@ type PeriodOption = '7d' | '30d' | 'month' | 'custom';
             <div class="h-[320px]"><canvas #trendChart></canvas></div>
           </article>
 
-          <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <article class="ca-panel p-5">
             <div class="mb-4 border-b border-slate-100 pb-3">
               <h2 class="text-sm font-bold text-slate-850">Distribución por estado</h2>
               <p class="text-xs text-slate-400">Conteo real por estado actual.</p>
@@ -128,7 +128,7 @@ type PeriodOption = '7d' | '30d' | 'month' | 'custom';
         </section>
 
         <section class="grid gap-6 xl:grid-cols-2">
-          <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <article class="ca-panel p-5">
             <div class="mb-4 border-b border-slate-100 pb-3">
               <h2 class="text-sm font-bold text-slate-850">Categorías más reportadas</h2>
               <p class="text-xs text-slate-400">Top categorías del periodo filtrado.</p>
@@ -136,7 +136,7 @@ type PeriodOption = '7d' | '30d' | 'month' | 'custom';
             <div class="h-[300px]"><canvas #categoryChart></canvas></div>
           </article>
 
-          <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <article class="ca-panel p-5">
             <div class="mb-4 border-b border-slate-100 pb-3">
               <h2 class="text-sm font-bold text-slate-850">Sectores con mayor actividad</h2>
               <p class="text-xs text-slate-400">Sectores o parroquias con más incidencias.</p>
@@ -146,7 +146,7 @@ type PeriodOption = '7d' | '30d' | 'month' | 'custom';
         </section>
 
         <section class="grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-          <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <article class="ca-panel overflow-hidden">
             <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
               <div>
                 <h2 class="text-sm font-bold text-slate-850">Actividad comunitaria</h2>
@@ -184,7 +184,7 @@ type PeriodOption = '7d' | '30d' | 'month' | 'custom';
             </div>
           </article>
 
-          <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <article class="ca-panel p-5">
             <div class="mb-4 border-b border-slate-100 pb-3">
               <h2 class="text-sm font-bold text-slate-850">Alertas de moderación</h2>
               <p class="text-xs text-slate-400">Resumen de contenido multimedia por estado.</p>
@@ -211,7 +211,7 @@ type PeriodOption = '7d' | '30d' | 'month' | 'custom';
           </article>
         </section>
       } @else if (!loading()) {
-        <div class="rounded-xl border border-dashed border-slate-250 bg-white p-10 text-center">
+        <div class="ca-empty-state">
           <i class="pi pi-chart-line text-3xl text-slate-300"></i>
           <p class="mt-3 text-sm font-bold text-slate-700">No hay datos para los filtros seleccionados.</p>
         </div>

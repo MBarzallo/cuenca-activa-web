@@ -46,7 +46,7 @@ import { forkJoin } from 'rxjs';
     <div class="space-y-6">
       <p-toast></p-toast>
       <!-- Compact Admin Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-xs">
+      <div class="ca-panel flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <span class="text-xs font-bold uppercase tracking-[0.15em] text-[var(--ca-teal)] block">Moderación</span>
           <h2 class="text-2xl font-bold text-[var(--ca-navy)] mt-1">Gestión de Incidencias</h2>
@@ -150,7 +150,7 @@ import { forkJoin } from 'rxjs';
       <div class="fixed inset-0 z-[1000] bg-slate-900/40 backdrop-blur-xs" (click)="drawerVisible.set(false)"></div>
       
       <!-- Drawer Container -->
-      <div class="fixed inset-y-0 right-0 z-[1001] w-full max-w-4xl bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300">
+      <div class="fixed inset-y-0 right-0 z-[1001] flex h-full w-full max-w-4xl transform flex-col bg-white shadow-[0_20px_60px_rgba(17,24,39,0.18)] transition-transform duration-300">
         <!-- Header -->
         <div class="bg-[var(--ca-navy)] text-white p-6 flex items-center justify-between shrink-0">
           <div>
@@ -204,7 +204,7 @@ import { forkJoin } from 'rxjs';
           <!-- TAB 1: RESUMEN Y ACTIVIDAD -->
           @if (activeTab() === 'resumen') {
             <!-- Info principal -->
-            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4 shadow-sm">
+            <div class="bg-slate-50 p-5 rounded-[var(--ca-radius)] border border-slate-100 space-y-4 shadow-sm">
               <div class="flex justify-between items-start">
                 <div>
                   <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Título</span>
@@ -272,7 +272,7 @@ import { forkJoin } from 'rxjs';
                     }
                   </div>
                 } @else {
-                  <div class="bg-slate-50 border border-slate-150 rounded-2xl p-6 text-center text-xs text-slate-400 font-medium italic">
+                  <div class="bg-slate-50 border border-slate-150 rounded-[var(--ca-radius)] p-6 text-center text-xs text-slate-400 font-medium italic">
                     No hay imágenes de evidencia adjuntas para esta incidencia.
                   </div>
                 }
@@ -287,7 +287,7 @@ import { forkJoin } from 'rxjs';
                 @if (comentarios().length > 0) {
                   <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                     @for (com of comentarios(); track com.idComentario) {
-                      <div class="bg-slate-50 border border-slate-150 rounded-2xl p-4 space-y-1">
+                      <div class="bg-slate-50 border border-slate-150 rounded-[var(--ca-radius)] p-4 space-y-1">
                         <div class="flex justify-between items-center text-[10px] text-slate-400 font-bold">
                           <span>&#64;{{ com.aliasUsuario || 'Ciudadano' }}</span>
                           <span>{{ com.creadoEn | date:'short' }}</span>
@@ -297,7 +297,7 @@ import { forkJoin } from 'rxjs';
                     }
                   </div>
                 } @else {
-                  <div class="bg-slate-50 border border-slate-150 rounded-2xl p-6 text-center text-xs text-slate-400 font-medium italic">
+                  <div class="bg-slate-50 border border-slate-150 rounded-[var(--ca-radius)] p-6 text-center text-xs text-slate-400 font-medium italic">
                     Esta incidencia no registra comentarios de ciudadanos.
                   </div>
                 }
@@ -312,7 +312,7 @@ import { forkJoin } from 'rxjs';
                 @if (confirmaciones().length > 0) {
                   <div class="space-y-3">
                     @for (conf of confirmaciones(); track conf.idConfirmacion) {
-                      <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-2 shadow-sm">
+                      <div class="bg-white border border-slate-200 rounded-[var(--ca-radius)] p-4 space-y-2 shadow-sm">
                         <div class="flex justify-between items-center text-[10px]">
                           <span class="font-bold text-slate-600">&#64;{{ conf.aliasUsuario || 'Ciudadano' }}</span>
                           <span class="text-slate-400">{{ conf.creadoEn | date:'short' }}</span>
@@ -331,7 +331,7 @@ import { forkJoin } from 'rxjs';
                     }
                   </div>
                 } @else {
-                  <div class="bg-slate-50 border border-slate-150 rounded-2xl p-6 text-center text-xs text-slate-400 font-medium italic">
+                  <div class="bg-slate-50 border border-slate-150 rounded-[var(--ca-radius)] p-6 text-center text-xs text-slate-400 font-medium italic">
                     Ningún ciudadano ha confirmado todavía que este problema haya sido solucionado.
                   </div>
                 }
@@ -341,7 +341,7 @@ import { forkJoin } from 'rxjs';
 
           <!-- TAB 2: CAMBIAR ESTADO -->
           @if (activeTab() === 'estado') {
-            <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-sm">
+            <div class="bg-white border border-slate-200 rounded-[var(--ca-radius)] p-6 space-y-6 shadow-sm">
               <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Estado actual:</span>
                 <p-tag [value]="item.nombreEstado" [severity]="tagSeverity(item.codigoEstado)"></p-tag>
@@ -404,7 +404,7 @@ import { forkJoin } from 'rxjs';
               @if (relacionadas().length > 0) {
                 <div class="grid gap-3">
                   @for (rel of relacionadas(); track rel.idRelacion) {
-                    <div class="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                    <div class="bg-white border border-slate-200 rounded-[var(--ca-radius)] p-4 flex items-center justify-between shadow-sm">
                       <div>
                         <h5 class="text-xs font-bold text-slate-800">{{ rel.titulo }}</h5>
                         <div class="flex gap-3 text-[10px] text-slate-400 font-semibold mt-1">
@@ -420,14 +420,14 @@ import { forkJoin } from 'rxjs';
                   }
                 </div>
               } @else {
-                <div class="bg-slate-50 border border-slate-150 rounded-2xl p-6 text-center text-xs text-slate-400 font-medium italic">
+                <div class="bg-slate-50 border border-slate-150 rounded-[var(--ca-radius)] p-6 text-center text-xs text-slate-400 font-medium italic">
                   Esta incidencia no registra relaciones previas con otros reportes.
                 </div>
               }
             </div>
 
             <!-- Crear nueva relación -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+            <div class="bg-white border border-slate-200 rounded-[var(--ca-radius)] p-6 space-y-4 shadow-sm">
               <h4 class="text-sm font-bold text-slate-855 uppercase tracking-wider">Crear nueva relación</h4>
               
               <!-- Buscador -->
@@ -521,7 +521,7 @@ import { forkJoin } from 'rxjs';
                       <!-- Dot indicators -->
                       <span class="absolute -left-[31px] top-1.5 grid h-4 w-4 place-items-center rounded-full bg-white border-2 border-[var(--ca-teal)] shadow-xxs"></span>
                       
-                      <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-2 shadow-sm">
+                      <div class="bg-white border border-slate-200 rounded-[var(--ca-radius)] p-4 space-y-2 shadow-sm">
                         <div class="flex justify-between items-center text-[10px] text-slate-400 font-bold border-b border-slate-100 pb-1.5">
                           <span class="flex items-center gap-1">
                             <i class="pi pi-user text-[9px]"></i>
@@ -548,7 +548,7 @@ import { forkJoin } from 'rxjs';
                   }
                 </div>
               } @else {
-                <div class="bg-slate-50 border border-slate-150 rounded-2xl p-6 text-center text-xs text-slate-400 font-medium italic">
+                <div class="bg-slate-50 border border-slate-150 rounded-[var(--ca-radius)] p-6 text-center text-xs text-slate-400 font-medium italic">
                   No se registran cambios de estado anteriores en esta incidencia.
                 </div>
               }
@@ -562,7 +562,7 @@ import { forkJoin } from 'rxjs';
     <!-- CONFIRMATION MODAL -->
     @if (showConfirmModal()) {
       <div class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-        <div class="w-full max-w-md bg-white rounded-3xl border border-slate-200 p-6 shadow-2xl space-y-4">
+        <div class="w-full max-w-md bg-white rounded-[var(--ca-radius-lg)] border border-slate-200 p-6 shadow-[0_20px_60px_rgba(17,24,39,0.18)] space-y-4">
           <div class="flex items-center gap-3">
             <span class="grid h-10 w-10 place-items-center rounded-full bg-amber-50 text-amber-600 shrink-0">
               <i class="pi pi-exclamation-triangle text-lg"></i>

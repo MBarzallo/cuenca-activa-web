@@ -32,7 +32,7 @@ import { citizenStatusOptions, isFinalCitizenIncident } from '../../../shared/ut
   standalone: true,
   imports: [RouterLink, FormsModule, ButtonModule, CardModule, DialogModule, SelectModule, TagModule, TextareaModule, DatePipe],
   template: `
-    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <main class="ca-page-shell">
       <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
         <a routerLink="/incidencias" pButton severity="secondary" outlined icon="pi pi-arrow-left" label="Volver al listado"></a>
         @if (incidencia(); as item) {

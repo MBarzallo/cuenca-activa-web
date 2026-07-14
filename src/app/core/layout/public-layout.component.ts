@@ -14,7 +14,7 @@ import { NotificationsService } from '../services/notifications.service';
     <div 
       [class.lg:grid-cols-[260px_1fr]]="!sidebarCollapsed()" 
       [class.lg:grid-cols-[80px_1fr]]="sidebarCollapsed()" 
-      class="min-h-screen bg-[var(--ca-bg)] text-[var(--ca-navy)] lg:grid transition-all duration-300"
+      class="min-h-[100dvh] bg-[var(--ca-bg)] text-[var(--ca-navy)] lg:grid transition-all duration-300"
     >
       <!-- DESKTOP SIDEBAR -->
       <aside 
@@ -22,7 +22,7 @@ import { NotificationsService } from '../services/notifications.service';
         [class.w-[80px]]="sidebarCollapsed()" 
         [class.px-4]="!sidebarCollapsed()"
         [class.px-2]="sidebarCollapsed()"
-        class="sticky top-0 z-30 hidden h-screen flex-col border-r border-slate-200 bg-white py-5 shadow-xs lg:flex transition-all duration-300 relative"
+        class="sticky top-0 z-30 hidden h-[100dvh] flex-col border-r border-slate-200 bg-white/95 py-5 shadow-xs backdrop-blur lg:flex transition-all duration-300 relative"
       >
         <!-- Collapse toggle button circular on the border -->
         <button 
@@ -35,7 +35,7 @@ import { NotificationsService } from '../services/notifications.service';
 
         <!-- Brand/Logo -->
         @if (!sidebarCollapsed()) {
-          <a routerLink="/" class="mb-6 flex items-center gap-3 rounded-2xl bg-[var(--ca-navy)] p-3 text-white transition-all">
+          <a routerLink="/" class="mb-6 flex items-center gap-3 rounded-[var(--ca-radius-lg)] bg-[var(--ca-navy)] p-3 text-white transition-all hover:bg-slate-800">
             <img src="/logo/icon_only_white.png" class="h-10 w-10 object-contain" alt="CA Logo" />
             <span>
               <span class="block font-semibold leading-5 text-sm">CuencaActiva</span>
@@ -43,7 +43,7 @@ import { NotificationsService } from '../services/notifications.service';
             </span>
           </a>
         } @else {
-          <a routerLink="/" class="mb-6 flex items-center justify-center rounded-2xl bg-[var(--ca-navy)] p-2.5 text-white w-12 h-12 mx-auto transition-all" title="CuencaActiva">
+          <a routerLink="/" class="mb-6 flex items-center justify-center rounded-[var(--ca-radius-lg)] bg-[var(--ca-navy)] p-2.5 text-white w-12 h-12 mx-auto transition-all hover:bg-slate-800" title="CuencaActiva">
             <img src="/logo/icon_only_white.png" class="h-7 w-7 object-contain" alt="CA Logo" />
           </a>
         }
@@ -149,7 +149,7 @@ import { NotificationsService } from '../services/notifications.service';
           <!-- Account Section -->
           @if (isLoggedIn()) {
             @if (!sidebarCollapsed()) {
-              <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 flex flex-col items-center">
+              <div class="rounded-[var(--ca-radius-lg)] border border-slate-200 bg-slate-50 p-4 flex flex-col items-center">
                 <p class="text-xs font-bold uppercase tracking-wide text-[var(--ca-teal)] self-start">Mi cuenta</p>
                 <p class="mt-2 truncate text-sm font-semibold w-full text-slate-800">{{ userLabel() }}</p>
                 <button pButton class="mt-3 w-full justify-center" size="small" severity="secondary" outlined icon="pi pi-sign-out" label="Salir" (click)="logout()"></button>
@@ -205,7 +205,7 @@ import { NotificationsService } from '../services/notifications.service';
       }
 
       <!-- MOBILE DRAWER MENU -->
-      <div class="fixed inset-y-0 right-0 z-[2020] w-72 transform bg-white p-5 shadow-2xl transition-transform duration-300 ease-in-out lg:hidden"
+      <div class="fixed inset-y-0 right-0 z-[2020] w-72 transform bg-white p-5 shadow-[0_20px_60px_rgba(17,24,39,0.18)] transition-transform duration-300 ease-in-out lg:hidden"
            [class.translate-x-0]="mobileMenuOpen()" [class.translate-x-full]="!mobileMenuOpen()">
         <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
           <div class="flex items-center gap-2">
@@ -266,7 +266,7 @@ import { NotificationsService } from '../services/notifications.service';
               <a routerLink="/admin" pButton class="w-full justify-center" icon="pi pi-shield" label="Panel admin" (click)="closeMobileMenu()"></a>
             }
             @if (isLoggedIn()) {
-              <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div class="rounded-[var(--ca-radius-lg)] border border-slate-200 bg-slate-50 p-4">
                 <p class="text-[10px] font-bold uppercase tracking-wide text-[var(--ca-teal)]">Mi cuenta</p>
                 <p class="mt-1 truncate text-xs font-semibold">{{ userLabel() }}</p>
                 <button pButton class="mt-3 w-full justify-center p-button-sm" severity="secondary" outlined icon="pi pi-sign-out" label="Salir" (click)="logoutMobile()"></button>

@@ -13,15 +13,10 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, ButtonModule, CardModule, InputTextModule, MessageModule],
   template: `
-    <main class="min-h-screen w-full bg-white">
-      <div class="grid min-h-screen w-full lg:grid-cols-2">
+    <main class="ca-auth-page">
+      <div class="ca-auth-grid">
 
-        <!-- Panel visual (Left) -->
-        <aside class="relative hidden flex-col justify-between overflow-hidden bg-[var(--ca-navy)] p-12 text-white lg:flex">
-          <div class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[var(--ca-teal)]/25 blur-3xl"></div>
-          <div class="absolute -bottom-20 left-10 h-64 w-64 rounded-full bg-[var(--ca-gold)]/20 blur-3xl"></div>
-
-          <!-- Header / Logo -->
+        <aside class="ca-auth-aside">
           <div class="relative">
             <a routerLink="/" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
               <img src="/logo/icon_only_white.png" class="h-14 w-14 object-contain" alt="CA Logo" />
@@ -32,17 +27,16 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
             </a>
 
             <div class="mt-24 max-w-md">
-              <p class="text-sm font-bold uppercase tracking-[0.28em] text-[var(--ca-gold)]">Contraseña</p>
+              <p class="ca-kicker text-[var(--ca-gold)]">Contraseña</p>
               <h1 class="mt-5 text-4xl font-black leading-tight tracking-tight xl:text-5xl">Recupera el acceso a tu cuenta.</h1>
               <p class="mt-6 text-base leading-8 text-slate-300">Te enviaremos un enlace a tu correo electrónico para que puedas crear una nueva contraseña de forma segura.</p>
             </div>
           </div>
 
-          <!-- Beneficios -->
           <div class="relative grid gap-4">
             <div class="grid grid-cols-2 gap-4">
-              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
-                <div class="mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-[var(--ca-teal)]/20 text-[var(--ca-teal)]">
+              <div class="ca-auth-benefit">
+                <div class="ca-auth-benefit-icon bg-[var(--ca-teal)]/20 text-[var(--ca-teal)]">
                   <i class="pi pi-map-marker"></i>
                 </div>
                 <p class="text-sm font-bold">Reportes cercanos</p>
@@ -51,8 +45,8 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                 </p>
               </div>
 
-              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
-                <div class="mb-4 grid h-11 w-11 place-items-center rounded-2xl bg-[var(--ca-gold)]/20 text-[var(--ca-gold)]">
+              <div class="ca-auth-benefit">
+                <div class="ca-auth-benefit-icon bg-[var(--ca-gold)]/20 text-[var(--ca-gold)]">
                   <i class="pi pi-comments"></i>
                 </div>
                 <p class="text-sm font-bold">Participación útil</p>
@@ -62,7 +56,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
               </div>
             </div>
 
-            <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+            <div class="ca-auth-benefit">
               <div class="flex items-center justify-between gap-4">
                 <div>
                   <p class="text-sm font-bold text-white">Plataforma comunitaria</p>
@@ -71,7 +65,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                   </p>
                 </div>
 
-                <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white text-[var(--ca-navy)]">
+                <div class="grid h-12 w-12 place-items-center rounded-[var(--ca-radius)] bg-white text-[var(--ca-navy)]">
                   <i class="pi pi-shield"></i>
                 </div>
               </div>
@@ -79,10 +73,8 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
           </div>
         </aside>
 
-        <!-- Formulario (Right) -->
-        <section class="flex min-h-screen items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-16">
-          <div class="w-full max-w-[420px]">
-            <!-- Header móvil -->
+        <section class="flex min-h-[100dvh] items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-16">
+          <div class="ca-auth-card w-full max-w-[440px]">
             <div class="mb-10 lg:hidden">
               <a routerLink="/" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
                 <img src="/logo/icon_only.png" class="h-14 w-14 object-contain" alt="CA Logo" />
@@ -95,7 +87,7 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
             </div>
 
             <div class="mb-8">
-              <p class="text-sm font-black uppercase tracking-[0.24em] text-[var(--ca-gold)]">Recuperar contraseña</p>
+              <p class="ca-kicker text-[var(--ca-gold)]">Recuperar contraseña</p>
               <h2 class="mt-4 text-4xl font-black tracking-tight text-[var(--ca-navy)]">Restablecer</h2>
               <p class="mt-4 text-base leading-7 text-slate-600">Te enviaremos un enlace a tu correo para crear una nueva contraseña.</p>
             </div>
@@ -112,13 +104,13 @@ import { AuthSessionService } from '../../../core/auth/auth-session.service';
                 <span class="mb-2 block text-sm font-bold text-slate-700">Correo electrónico</span>
                 <span class="p-input-icon-left w-full">
                   <i class="pi pi-envelope text-slate-400"></i>
-                  <input pInputText class="h-12 w-full rounded-2xl" type="email" formControlName="email" autocomplete="email" placeholder="usuario@correo.com" />
+                  <input pInputText class="h-12 w-full" type="email" formControlName="email" autocomplete="email" placeholder="usuario@correo.com" />
                 </span>
               </label>
 
               <button
                 pButton
-                class="h-12 w-full justify-center rounded-2xl border-0 bg-[var(--ca-teal)] text-base font-bold text-white hover:bg-[#0f9f91]"
+                class="h-12 w-full justify-center border-0 text-base font-bold"
                 type="submit"
                 icon="pi pi-send"
                 label="Enviar enlace"

@@ -35,7 +35,7 @@ import { AuditoriaEvento } from '../../core/models/auditoria-evento.model';
       <p-toast></p-toast>
       
       <!-- Compact Admin Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-xs">
+      <div class="ca-panel flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <span class="text-xs font-bold uppercase tracking-[0.15em] text-[var(--ca-gold)] block">Panel de Trazabilidad</span>
           <h2 class="text-2xl font-bold text-[var(--ca-navy)] mt-1">Auditoría de Eventos</h2>
@@ -51,9 +51,9 @@ import { AuditoriaEvento } from '../../core/models/auditoria-evento.model';
         </div>
       </div>
 
-      <div class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+      <div class="ca-panel p-6">
         <!-- Filtros de búsqueda -->
-        <div class="mb-6 bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
+        <div class="mb-6 bg-slate-50 p-5 rounded-[var(--ca-radius)] border border-slate-100 space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             
             <!-- Usuario Ejecutor (Alias, email o UUID) -->
@@ -196,7 +196,7 @@ import { AuditoriaEvento } from '../../core/models/auditoria-evento.model';
           <ng-template pTemplate="rowexpansion" let-evento>
             <tr>
               <td colspan="8" class="p-4 bg-slate-50 border-y border-slate-100">
-                <div class="bg-white rounded-2xl border border-slate-150 p-6 shadow-sm space-y-6">
+                <div class="bg-white rounded-[var(--ca-radius)] border border-slate-150 p-6 shadow-sm space-y-6">
                   <!-- Grid de Info del Evento -->
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Bloque Usuario -->
@@ -304,7 +304,7 @@ import { AuditoriaEvento } from '../../core/models/auditoria-evento.model';
       <div class="fixed inset-0 z-[1000] bg-slate-900/40 backdrop-blur-xs transition-opacity" (click)="closeDetailDrawer()"></div>
       
       <!-- Drawer Container -->
-      <div class="fixed inset-y-0 right-0 z-[1001] w-full max-w-xl bg-white shadow-2xl flex flex-col h-full transform transition-transform duration-300">
+      <div class="fixed inset-y-0 right-0 z-[1001] flex h-full w-full max-w-xl transform flex-col bg-white shadow-[0_20px_60px_rgba(17,24,39,0.18)] transition-transform duration-300">
         <!-- Header -->
         <div class="bg-[var(--ca-navy)] text-white p-6 flex items-center justify-between shrink-0">
           <div>
@@ -320,7 +320,7 @@ import { AuditoriaEvento } from '../../core/models/auditoria-evento.model';
         <div class="flex-1 overflow-y-auto p-6 space-y-6">
           
           <!-- Resumen General -->
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+          <div class="bg-slate-50 p-4 rounded-[var(--ca-radius)] border border-slate-100 space-y-3">
             <div>
               <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Acción Realizada</span>
               <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold mt-1 inline-block" [ngClass]="getAccionBadgeClass(evento.accion)">
@@ -336,7 +336,7 @@ import { AuditoriaEvento } from '../../core/models/auditoria-evento.model';
           <!-- Usuario Ejecutor -->
           <div class="space-y-2">
             <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase">Usuario Ejecutor</h4>
-            <div class="bg-white border border-slate-250 rounded-2xl p-4 flex items-center gap-3">
+            <div class="bg-white border border-slate-250 rounded-[var(--ca-radius)] p-4 flex items-center gap-3">
               <span class="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-500 font-bold text-sm">
                 {{ evento.aliasPublicoUsuario ? evento.aliasPublicoUsuario.slice(0, 2).toUpperCase() : 'SI' }}
               </span>
@@ -354,7 +354,7 @@ import { AuditoriaEvento } from '../../core/models/auditoria-evento.model';
           <!-- Entidad Afectada -->
           <div class="space-y-2">
             <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase">Entidad Relacionada</h4>
-            <div class="bg-white border border-slate-250 rounded-2xl p-4 space-y-3">
+            <div class="bg-white border border-slate-250 rounded-[var(--ca-radius)] p-4 space-y-3">
               <div class="flex justify-between items-center gap-4">
                 <div>
                   <span class="text-[10px] font-bold text-slate-400 block uppercase">Tipo de Entidad</span>
@@ -388,7 +388,7 @@ import { AuditoriaEvento } from '../../core/models/auditoria-evento.model';
           <!-- Datos Técnicos / Origen -->
           <div class="space-y-2">
             <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase">Detalles Técnicos</h4>
-            <div class="bg-white border border-slate-250 rounded-2xl p-4 space-y-3 text-xs text-slate-700">
+            <div class="bg-white border border-slate-250 rounded-[var(--ca-radius)] p-4 space-y-3 text-xs text-slate-700">
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <span class="text-[10px] font-bold text-slate-400 block uppercase">Fecha y Hora Completa</span>

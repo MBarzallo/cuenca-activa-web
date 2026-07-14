@@ -19,7 +19,7 @@ declare const L: any;
   standalone: true,
   imports: [FormsModule, RouterLink, ButtonModule, CardModule, InputTextModule, SelectModule, TagModule],
   template: `
-    <main class="h-[calc(100vh-125px)] min-h-[450px] xl:h-screen xl:min-h-0 p-4 xl:p-5">
+    <main class="h-[calc(100dvh-125px)] min-h-[450px] xl:h-[100dvh] xl:min-h-0 p-4 xl:p-5">
       <div class="relative flex h-full overflow-hidden w-full min-h-0">
         <!-- BACKDROP OVERLAY FOR MOBILE -->
         @if (isMobile() && mobileFiltersOpen()) {
@@ -38,7 +38,7 @@ declare const L: any;
           [class.xl:opacity-0]="collapsed()"
           [class.xl:pointer-events-none]="collapsed()"
           [class.overflow-hidden]="collapsed()"
-          class="fixed inset-y-0 left-0 z-[1030] w-80 max-w-[calc(100vw-3rem)] transform bg-white p-5 shadow-2xl transition-all duration-300 ease-in-out xl:static xl:z-auto xl:max-w-none xl:bg-transparent xl:p-0 xl:shadow-none xl:translate-x-0 flex flex-col gap-4 overflow-y-auto max-h-full xl:pr-1 min-h-0 shrink-0"
+          class="fixed inset-y-0 left-0 z-[1030] w-80 max-w-[calc(100vw-3rem)] transform bg-white p-5 shadow-[0_20px_60px_rgba(17,24,39,0.18)] transition-all duration-300 ease-in-out xl:static xl:z-auto xl:max-w-none xl:bg-transparent xl:p-0 xl:shadow-none xl:translate-x-0 flex flex-col gap-4 overflow-y-auto max-h-full xl:pr-1 min-h-0 shrink-0"
         >
           <!-- Mobile Drawer Header -->
           <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-1 xl:hidden shrink-0">
@@ -182,7 +182,7 @@ declare const L: any;
           ></button>
 
           @if (selected(); as item) {
-            <div class="absolute bottom-4 left-4 right-4 z-[1005] max-w-xl rounded-3xl border border-slate-200 bg-white/95 p-5 shadow-2xl shadow-slate-900/15 backdrop-blur">
+            <div class="absolute bottom-4 left-4 right-4 z-[1005] max-w-xl rounded-[var(--ca-radius-lg)] border border-slate-200 bg-white/95 p-5 shadow-[0_20px_60px_rgba(17,24,39,0.18)] backdrop-blur">
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <p class="text-xs font-bold uppercase tracking-wider text-[var(--ca-teal)]">{{ item.nombreCategoria }}</p>

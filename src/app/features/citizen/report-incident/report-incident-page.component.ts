@@ -39,7 +39,7 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
 
       <section class="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div class="space-y-6">
-          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="ca-panel p-6">
             <form [formGroup]="form" class="space-y-8" (ngSubmit)="submit()">
               <!-- SECTION 1: DETALLES -->
               <section class="space-y-4">
@@ -197,7 +197,7 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
 
         <aside class="space-y-6 xl:sticky xl:top-8 xl:self-start">
           <!-- Guide Card -->
-          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="ca-panel p-6">
             <h2 class="text-base font-bold text-slate-800">Antes de publicar</h2>
             <div class="mt-4 space-y-3 text-sm text-slate-600">
               <div class="flex items-start gap-2.5 rounded-xl bg-slate-50 p-3">
@@ -216,7 +216,7 @@ import { IncidenciasService } from '../../../core/services/incidencias.service';
           </div>
 
           <!-- Info Card -->
-          <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-6">
+          <div class="ca-panel bg-slate-50/70 p-6">
             <i class="pi pi-shield text-xl text-[var(--ca-teal)]"></i>
             <h2 class="mt-3 text-base font-bold text-slate-800">Seguimiento ciudadano</h2>
             <p class="mt-2 text-xs leading-relaxed text-slate-500">Una vez enviado, recibirás notificaciones cuando otros vecinos voten por tu reporte o cuando personal municipal actualice el estado del caso.</p>

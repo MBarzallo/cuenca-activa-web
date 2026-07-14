@@ -13,9 +13,9 @@ import { NotificationsService } from '../../../core/services/notifications.servi
   standalone: true,
   imports: [ButtonModule, CardModule, TagModule],
   template: `
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main class="ca-page-shell">
       <!-- PAGE HEADER: Light and elegant inbox -->
-      <header class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header class="ca-page-header">
         <div>
           <span class="text-xs font-bold uppercase tracking-wider text-[var(--ca-teal)]">Centro de avisos</span>
           <h1 class="text-3xl font-bold tracking-tight text-slate-900 mt-1">Notificaciones</h1>
@@ -112,7 +112,7 @@ import { NotificationsService } from '../../../core/services/notifications.servi
 
         <!-- PREFERENCES SIDEBAR -->
         <aside class="space-y-6">
-          <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="ca-panel p-6">
             <h2 class="text-base font-bold text-slate-800 mb-1.5">Preferencias</h2>
             <p class="text-xs text-slate-500 mb-4">Personaliza los tipos de notificaciones que deseas recibir.</p>
 
@@ -174,7 +174,7 @@ import { NotificationsService } from '../../../core/services/notifications.servi
           </div>
 
           <!-- Info Helper Card -->
-          <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-6">
+          <div class="ca-panel bg-slate-50/70 p-6">
             <i class="pi pi-info-circle text-xl text-[var(--ca-teal)]"></i>
             <h2 class="mt-3 text-base font-bold text-slate-800">Bandeja de avisos</h2>
             <p class="mt-2 text-xs leading-relaxed text-slate-500">Mantener tus notificaciones al día te ayuda a conocer de inmediato cuándo se resuelven o validan los reportes en tu sector.</p>

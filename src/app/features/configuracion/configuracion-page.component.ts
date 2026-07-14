@@ -28,7 +28,7 @@ import { ParametroSistema } from '../../core/models/parametro-sistema.model';
       <p-toast></p-toast>
       
       <!-- Compact Admin Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-xs">
+      <div class="ca-panel flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <span class="text-xs font-bold uppercase tracking-[0.15em] text-[var(--ca-teal)] block">Ajustes Globales</span>
           <h2 class="text-2xl font-bold text-[var(--ca-navy)] mt-1">Configuración del Sistema</h2>
@@ -46,7 +46,7 @@ import { ParametroSistema } from '../../core/models/parametro-sistema.model';
 
       <!-- Grid de Parámetros -->
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <p-card *ngFor="let param of parametros()" styleClass="border-0 shadow-sm rounded-2xl overflow-hidden">
+        <p-card *ngFor="let param of parametros()" styleClass="border-0 shadow-sm rounded-[var(--ca-radius)] overflow-hidden">
           <ng-template pTemplate="header">
             <div class="border-b border-slate-100 px-5 py-4 bg-slate-50 flex items-center justify-between">
               <span class="font-mono font-bold text-xs text-[var(--ca-navy)] uppercase tracking-wide">{{ param.codigo }}</span>
