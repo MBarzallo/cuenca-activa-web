@@ -12,6 +12,8 @@ import { CategoriaIncidencia, EstadoIncidencia } from '../../../core/models/cata
 import { Incidencia, IncidenciaCercana } from '../../../core/models/incidencia.model';
 import { CatalogosService } from '../../../core/services/catalogos.service';
 import { IncidenciasService } from '../../../core/services/incidencias.service';
+import { AuthSessionService } from '../../../core/auth/auth-session.service';
+import { UserProfileService } from '../../../core/services/user-profile.service';
 
 declare const L: any;
 @Component({
@@ -231,6 +233,8 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
   private markers: any = null;
   private userMarker: L.Marker | null = null;
   private userCircle: L.Circle | null = null;
+  private lastLocationUpdateAt = 0;
+  private readonly locationUpdateMinIntervalMs = 5 * 60 * 1000;
 
   readonly collapsed = signal(false);
   readonly mobileFiltersOpen = signal(false);
@@ -240,6 +244,8 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
     private readonly incidenciasService: IncidenciasService, 
     private readonly catalogosService: CatalogosService,
     private readonly messages: MessageService,
+    private readonly authSession: AuthSessionService,
+    private readonly userProfileService: UserProfileService,
   ) {}
 
   ngOnInit() {
@@ -363,6 +369,7 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
         const longitud = coords.longitude;
         const radioMetros = this.nearbyRadiusKm * 1000;
         this.setUserLocation(latitud, longitud, radioMetros);
+        this.updateLastKnownLocationIfNeeded(latitud, longitud);
         this.incidenciasService.listNearby(latitud, longitud, radioMetros, 80, 0).subscribe({
           next: (items) => {
             this.nearbyIncidencias.set(items);
@@ -391,6 +398,26 @@ export class PublicMapPageComponent implements OnInit, AfterViewInit, OnDestroy 
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
     );
+  }
+
+  private updateLastKnownLocationIfNeeded(latitud: number, longitud: number) {
+    if (!this.authSession.isAuthenticated()) {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - this.lastLocationUpdateAt < this.locationUpdateMinIntervalMs) {
+      return;
+    }
+
+    this.userProfileService.updateLastKnownLocation({ latitud, longitud }).subscribe({
+      next: () => {
+        this.lastLocationUpdateAt = now;
+      },
+      error: () => {
+        // La ubicación remota no debe bloquear el mapa público.
+      },
+    });
   }
 
   showAll() {

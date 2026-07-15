@@ -16,6 +16,11 @@ export interface UpdateProfileRequest {
   fotoPerfilUrl?: string | null;
 }
 
+export interface UpdateLocationRequest {
+  latitud: number;
+  longitud: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserProfileService {
   private readonly maxAvatarSizeBytes = 3 * 1024 * 1024;
@@ -43,6 +48,13 @@ export class UserProfileService {
 
   syncPhone(): Observable<AuthUser> {
     return this.api.post<AuthUser>('/api/auth/phone/sync', {});
+  }
+
+  updateLastKnownLocation(request: UpdateLocationRequest): Observable<{ ultimaUbicacionActualizadaEn: string }> {
+    return this.api.put<{ ultimaUbicacionActualizadaEn: string }>('/api/usuarios/me/ubicacion', {
+      latitud: request.latitud,
+      longitud: request.longitud,
+    });
   }
 
   async uploadProfilePhoto(file: File): Promise<string> {

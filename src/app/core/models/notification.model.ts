@@ -27,3 +27,21 @@ export interface NotificationPreference {
 export interface UnreadNotificationCount {
   total: number;
 }
+
+export type AdminPushDestination = 'TODOS' | 'USUARIOS';
+
+export interface AdminPushNotificationRequest {
+  destino: AdminPushDestination;
+  idUsuarios?: string[];
+  titulo: string;
+  mensaje: string;
+  categoria?: string | null;
+}
+
+export interface AdminPushNotificationResponse {
+  destinatarios: number;
+  notificacionesCreadas: number;
+  pushesEnviados: number;
+  sinDispositivos: number;
+  errores: number;
+}

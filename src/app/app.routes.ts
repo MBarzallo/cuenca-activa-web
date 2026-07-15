@@ -127,6 +127,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/usuarios/usuarios-page.component').then((m) => m.UsuariosPageComponent),
       },
       {
+        path: 'notificaciones',
+        loadComponent: () =>
+          import('./features/notificaciones/admin-notificaciones-page.component').then(
+            (m) => m.AdminNotificacionesPageComponent,
+          ),
+      },
+      {
         path: 'configuracion',
         loadComponent: () => import('./features/configuracion/configuracion-page.component').then((m) => m.ConfiguracionPageComponent),
       },

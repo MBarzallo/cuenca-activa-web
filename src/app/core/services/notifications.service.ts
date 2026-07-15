@@ -1,6 +1,12 @@
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { AppNotification, NotificationPreference, UnreadNotificationCount } from '../models/notification.model';
+import {
+  AdminPushNotificationRequest,
+  AdminPushNotificationResponse,
+  AppNotification,
+  NotificationPreference,
+  UnreadNotificationCount,
+} from '../models/notification.model';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -40,5 +46,9 @@ export class NotificationsService {
       habilitada,
       radioCercaniaKm: radioCercaniaKm ?? null,
     });
+  }
+
+  sendAdminPush(request: AdminPushNotificationRequest): Observable<AdminPushNotificationResponse> {
+    return this.api.post<AdminPushNotificationResponse>('/api/admin/notificaciones/push', request);
   }
 }
